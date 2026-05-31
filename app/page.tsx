@@ -3,7 +3,6 @@ import Link from "next/link";
 export default function Home() {
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 flex flex-col font-sans selection:bg-emerald-100 selection:text-emerald-900">
-      
       {/* Navigation Header */}
       <header className="sticky top-0 z-40 w-full border-b border-gray-200 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
@@ -30,14 +29,14 @@ export default function Home() {
 
       {/* Main content */}
       <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 flex flex-col justify-center items-center py-16 sm:py-24 text-center">
-        
         {/* Hero title */}
         <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-gray-900 mb-6 max-w-3xl leading-tight">
           Professional WhatsApp Link Generator
         </h1>
 
         <p className="text-gray-600 text-lg max-w-2xl leading-relaxed mb-12">
-          Create WhatsApp click-to-chat links, customizable messages, and QR codes. Build single links or import spreadsheet data in bulk.
+          Create WhatsApp click-to-chat links, customizable messages, and QR
+          codes. Build single links or import spreadsheet data in bulk.
         </p>
 
         {/* Navigation Link */}
@@ -54,26 +53,35 @@ export default function Home() {
                   </h2>
                 </div>
                 <p className="text-sm text-gray-600 leading-relaxed max-w-md">
-                  Configure customized links, view chat mockups, and generate bulk lists with CSV exports.
+                  Configure customized links, view chat mockups, and generate
+                  bulk lists with CSV exports.
                 </p>
               </div>
 
               <div className="w-10 h-10 rounded-lg bg-gray-100 text-gray-600 flex items-center justify-center font-bold shrink-0 border border-gray-200">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M9 5l7 7-7 7"
+                  />
                 </svg>
               </div>
             </div>
           </Link>
         </div>
-
       </main>
 
       {/* Footer */}
       <footer className="w-full py-8 border-t border-gray-200 bg-white text-center text-xs text-gray-500 mt-auto">
         <p>© 2026 allLink.tools. All rights reserved.</p>
       </footer>
-
     </div>
   );
 }

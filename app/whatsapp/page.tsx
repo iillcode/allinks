@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 import type { EmojiClickData } from "emoji-picker-react";
-
 // Dynamically import EmojiPicker to avoid SSR issues
 const EmojiPicker = dynamic(() => import("emoji-picker-react"), { ssr: false });
 
