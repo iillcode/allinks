@@ -1,4 +1,15 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+import { buildMetadata, SITE_URL } from "../seo";
+
+// ─── Page Metadata (noindex for thin content) ────────────────────────────────
+export const metadata: Metadata = buildMetadata({
+  title: "Terms of Service",
+  description:
+    "WA.link terms of service — understand your rights and responsibilities when using our free WhatsApp link generator.",
+  canonical: `${SITE_URL}/terms-of-service`,
+  noindex: true,
+});
 
 export default function TermsOfService() {
   return (

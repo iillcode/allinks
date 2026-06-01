@@ -1,4 +1,15 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+import { buildMetadata, SITE_URL } from "../seo";
+
+// ─── Page Metadata (noindex for thin content) ────────────────────────────────
+export const metadata: Metadata = buildMetadata({
+  title: "Privacy Policy",
+  description:
+    "WA.link privacy policy — learn how we protect your data. All WhatsApp link generation happens in your browser. We never store phone numbers or messages.",
+  canonical: `${SITE_URL}/privacy-policy`,
+  noindex: true,
+});
 
 export default function PrivacyPolicy() {
   return (
