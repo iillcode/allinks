@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 import type { EmojiClickData } from "emoji-picker-react";
+import Link from "next/link";
 // Dynamically import EmojiPicker to avoid SSR issues
 const EmojiPicker = dynamic(() => import("emoji-picker-react"), { ssr: false });
 
@@ -194,36 +195,20 @@ function EmojiTextarea({
 
 // ─── Main Component ──────────────────────────────────────────────────────────
 export default function WhatsappLinkCreator() {
-  const [activeTab, setActiveTab] = useState<"single" | "bulk">("single");
+  const [activeTab, setActiveTab] = useState<"single">("single");
 
   // Single tab states
   const [selectedCountry, setSelectedCountry] = useState<Country>(COUNTRIES[0]);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [customMessage, setCustomMessage] = useState("");
   const [copiedType, setCopiedType] = useState<"short" | "official" | null>(
-    null,
+    null
   );
   const [countrySearch, setCountrySearch] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-  // Bulk tab states
-  const [bulkRows, setBulkRows] = useState<BulkRow[]>([
-    { id: "1", countryCode: "91", phone: "915684575212", message: "hello ? " },
-    {
-      id: "2",
-      countryCode: "1",
-      phone: "2025550143",
-      message: "Hey there! I am interested in your products.",
-    },
-  ]);
-  const [bulkPasteText, setBulkPasteText] = useState("");
-  const [bulkCopySuccess, setBulkCopySuccess] = useState(false);
-  const [bulkImportStatus, setBulkImportStatus] = useState<string | null>(null);
-  const [isBulkImportModalOpen, setIsBulkImportModalOpen] = useState(false);
-  const [bulkUniversalMessage, setBulkUniversalMessage] = useState("");
 
   // FAQ open state
   const [openFaq, setOpenFaq] = useState<number | null>(null);
@@ -273,7 +258,9 @@ export default function WhatsappLinkCreator() {
 
   // Download QR Code
   const handleDownloadQR = async () => {
-    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(shortSingleUrl)}`;
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(
+      shortSingleUrl
+    )}`;
     try {
       const response = await fetch(qrUrl);
       const blob = await response.blob();
@@ -290,178 +277,10 @@ export default function WhatsappLinkCreator() {
     }
   };
 
-  // Bulk Generator Handlers
-  const handleAddBulkRow = () => {
-    const newRow: BulkRow = {
-      id: Date.now().toString(),
-      countryCode: selectedCountry.code,
-      phone: "",
-      message: "",
-    };
-    setBulkRows([...bulkRows, newRow]);
-  };
-
-  const handleUpdateBulkRow = (
-    id: string,
-    field: keyof BulkRow,
-    value: string,
-  ) => {
-    setBulkRows(
-      bulkRows.map((row) => (row.id === id ? { ...row, [field]: value } : row)),
-    );
-  };
-
-  const handleDeleteBulkRow = (id: string) => {
-    setBulkRows(bulkRows.filter((row) => row.id !== id));
-  };
-
-  const handleClearBulkRows = () => {
-    setBulkRows([]);
-  };
-
-  // Generate link for bulk row
-  const getBulkRowLink = (row: BulkRow) => {
-    const cleanPhone = row.phone.replace(/\D/g, "");
-    if (!cleanPhone) return "";
-    const fullPhone = `${row.countryCode}${cleanPhone}`;
-    return `https://api.whatsapp.com/send?phone=${fullPhone}&text=${encodeURIComponent(row.message)}`;
-  };
-
-  // Paste Data Parse Handler
-  const handleParseBulkPaste = () => {
-    if (!bulkPasteText.trim()) {
-      setBulkImportStatus("Please enter or paste some text first.");
-      return;
-    }
-
-    const tokens = bulkPasteText.split(/[\n\t,;]+/);
-    const parsedRows: BulkRow[] = [];
-    let successCount = 0;
-
-    tokens.forEach((token) => {
-      let phonePart = token.trim().replace(/^["']|["']$/g, "");
-      if (!phonePart) return;
-
-      let countryCode = "91";
-      let phoneNum = phonePart.replace(/\D/g, "");
-
-      if (!phoneNum) return;
-
-      if (phonePart.startsWith("+")) {
-        const matched = COUNTRIES.slice()
-          .sort((a, b) => b.code.length - a.code.length)
-          .find((c) => phoneNum.startsWith(c.code));
-        if (matched) {
-          countryCode = matched.code;
-          phoneNum = phoneNum.slice(matched.code.length);
-        }
-      } else {
-        if (phoneNum.length > 10) {
-          const matched = COUNTRIES.slice()
-            .sort((a, b) => b.code.length - a.code.length)
-            .find((c) => phoneNum.startsWith(c.code));
-          if (matched) {
-            countryCode = matched.code;
-            phoneNum = phoneNum.slice(matched.code.length);
-          }
-        }
-      }
-
-      parsedRows.push({
-        id: `${Date.now()}-${Math.random()}`,
-        countryCode,
-        phone: phoneNum,
-        message: bulkUniversalMessage,
-      });
-      successCount++;
-    });
-
-    if (parsedRows.length > 0) {
-      setBulkRows([...bulkRows, ...parsedRows]);
-      setBulkPasteText("");
-      setBulkUniversalMessage("");
-      setBulkImportStatus(`Successfully imported ${successCount} numbers!`);
-      setTimeout(() => {
-        setBulkImportStatus(null);
-        setIsBulkImportModalOpen(false);
-      }, 1500);
-    } else {
-      setBulkImportStatus(
-        "Could not parse any valid phone numbers. Please check format.",
-      );
-    }
-  };
-
-  const handleCopyAllLinks = () => {
-    const links = bulkRows
-      .map((row) => getBulkRowLink(row))
-      .filter((link) => link !== "")
-      .join("\n");
-
-    if (!links) return;
-    navigator.clipboard.writeText(links);
-    setBulkCopySuccess(true);
-    setTimeout(() => setBulkCopySuccess(false), 2000);
-  };
-
-  const handleExportCSV = () => {
-    const activeRows = bulkRows.filter(
-      (r) => r.phone.replace(/\D/g, "") !== "",
-    );
-    if (activeRows.length === 0) return;
-
-    const csvHeaders = [
-      "Country Code",
-      "Phone Number",
-      "Custom Message",
-      "WhatsApp Link",
-    ];
-    const csvRows = activeRows.map((row) => {
-      const cleanP = row.phone.replace(/\D/g, "");
-      const link = getBulkRowLink(row);
-      const escape = (text: string) => `"${text.replace(/"/g, '""')}"`;
-      return [
-        escape(row.countryCode),
-        escape(cleanP),
-        escape(row.message),
-        escape(link),
-      ].join(",");
-    });
-
-    const csvContent = [csvHeaders.join(","), ...csvRows].join("\n");
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `whatsapp_bulk_links_${new Date().toISOString().slice(0, 10)}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
-
-  const handleExportTXT = () => {
-    const links = bulkRows
-      .map((row) => getBulkRowLink(row))
-      .filter((link) => link !== "")
-      .join("\r\n");
-
-    if (!links) return;
-    const blob = new Blob([links], { type: "text/plain;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `whatsapp_links_${new Date().toISOString().slice(0, 10)}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
-
   const filteredCountries = COUNTRIES.filter(
     (c) =>
       c.name.toLowerCase().includes(countrySearch.toLowerCase()) ||
-      c.code.includes(countrySearch),
+      c.code.includes(countrySearch)
   );
 
   const faqs = [
@@ -883,16 +702,12 @@ export default function WhatsappLinkCreator() {
             >
               Single Link
             </button>
-            <button
-              onClick={() => setActiveTab("bulk")}
-              className={`relative px-4 py-2.5 text-sm font-semibold transition-colors duration-200 ${
-                activeTab === "bulk"
-                  ? "text-emerald-600"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}
+            <Link
+              href="/whatsapp/bulk"
+              className="relative px-4 py-2.5 text-sm font-semibold transition-colors duration-200 text-gray-500 hover:text-emerald-600"
             >
               Bulk Creator
-            </button>
+            </Link>
 
             {/* Sliding underline */}
             <div
@@ -947,7 +762,9 @@ export default function WhatsappLinkCreator() {
                           </span>
                         </span>
                         <svg
-                          className={`w-4 h-4 text-gray-500 shrink-0 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
+                          className={`w-4 h-4 text-gray-500 shrink-0 transition-transform ${
+                            isDropdownOpen ? "rotate-180" : ""
+                          }`}
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
@@ -984,7 +801,12 @@ export default function WhatsappLinkCreator() {
                                     setIsDropdownOpen(false);
                                     setCountrySearch("");
                                   }}
-                                  className={`w-full px-3 py-2 flex items-center justify-between text-left text-sm hover:bg-gray-50 ${selectedCountry.code === c.code && selectedCountry.name === c.name ? "bg-emerald-50 text-emerald-700 font-semibold" : "text-gray-700"}`}
+                                  className={`w-full px-3 py-2 flex items-center justify-between text-left text-sm hover:bg-gray-50 ${
+                                    selectedCountry.code === c.code &&
+                                    selectedCountry.name === c.name
+                                      ? "bg-emerald-50 text-emerald-700 font-semibold"
+                                      : "text-gray-700"
+                                  }`}
                                 >
                                   <span className="flex items-center gap-2 truncate">
                                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -1146,234 +968,6 @@ export default function WhatsappLinkCreator() {
                       <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.4 2.72 6.2 6 6.6V21h2v-3.4c3.28-.4 6-3.2 6-6.6h-1.7z" />
                     </svg>
                   </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ── TAB 2: BULK LINK CREATOR ── */}
-        {activeTab === "bulk" && (
-          <div className="space-y-6">
-            <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-              <div className="px-5 py-4 border-b border-gray-200 flex flex-wrap gap-4 items-center justify-between bg-gray-50">
-                <h3 className="font-bold text-gray-900">Data Grid</h3>
-                <div className="flex gap-2">
-                  <button
-                    id="clear-all-btn"
-                    onClick={handleClearBulkRows}
-                    className="h-8 px-3 bg-white border border-gray-300 hover:bg-gray-100 text-xs font-medium text-gray-700 rounded"
-                  >
-                    Clear All
-                  </button>
-                  <button
-                    id="bulk-import-btn"
-                    onClick={() => setIsBulkImportModalOpen(true)}
-                    className="h-8 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium rounded shadow-sm transition-colors"
-                  >
-                    Import
-                  </button>
-                  <button
-                    id="add-row-btn"
-                    onClick={handleAddBulkRow}
-                    className="h-8 px-3 bg-white border border-gray-300 hover:bg-gray-100 text-xs font-medium text-gray-700 rounded"
-                  >
-                    Add Row
-                  </button>
-                </div>
-              </div>
-
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="bg-gray-100 border-b border-gray-200 text-gray-600 text-xs font-semibold uppercase">
-                      <th className="py-3 px-4 w-12">#</th>
-                      <th className="py-3 px-4 w-48">
-                        <div className="flex items-center gap-2 w-full">
-                          <span className="w-2/3 truncate">Country</span>
-                          <select
-                            onChange={(e) => {
-                              const val = e.target.value;
-                              if (val)
-                                setBulkRows((prev) =>
-                                  prev.map((r) => ({ ...r, countryCode: val })),
-                                );
-                              e.target.value = "";
-                            }}
-                            className="w-1/3 bg-white border border-gray-300 rounded px-1 py-1 text-[10px] font-normal text-gray-700 focus:outline-none focus:border-emerald-500"
-                          >
-                            <option value="">All...</option>
-                            {COUNTRIES.map((c) => (
-                              <option key={`univ-${c.code}`} value={c.code}>
-                                +{c.code}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      </th>
-                      <th className="py-3 px-4 w-44 align-top">Phone Number</th>
-                      <th className="py-3 px-4 align-top">Message</th>
-                      <th className="py-3 px-4 w-40 align-top">Link</th>
-                      <th className="py-3 px-4 w-20 text-center align-top">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200 bg-white">
-                    {bulkRows.length > 0 ? (
-                      bulkRows.map((row, idx) => {
-                        const generatedLink = getBulkRowLink(row);
-                        const rowCountry =
-                          COUNTRIES.find((c) => c.code === row.countryCode) ||
-                          COUNTRIES[0];
-                        return (
-                          <tr key={row.id} className="hover:bg-gray-50 text-sm">
-                            <td className="py-2 px-4 text-gray-500 text-center">
-                              {idx + 1}
-                            </td>
-                            <td className="py-2 px-3">
-                              <div className="flex items-center gap-2 w-full">
-                                <div className="w-2/3 flex items-center gap-2 overflow-hidden">
-                                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                                  <img
-                                    src={`https://flagcdn.com/w20/${rowCountry.iso}.png`}
-                                    alt={rowCountry.name}
-                                    className="w-5 h-auto shrink-0 shadow-sm rounded-sm"
-                                  />
-                                  <span
-                                    className="text-xs truncate text-gray-700"
-                                    title={rowCountry.name}
-                                  >
-                                    {rowCountry.name}
-                                  </span>
-                                </div>
-                                <select
-                                  value={row.countryCode}
-                                  onChange={(e) =>
-                                    handleUpdateBulkRow(
-                                      row.id,
-                                      "countryCode",
-                                      e.target.value,
-                                    )
-                                  }
-                                  className="w-1/3 h-8 bg-white border border-gray-300 rounded px-1 text-[10px] focus:outline-none focus:border-emerald-500"
-                                >
-                                  {COUNTRIES.map((c) => (
-                                    <option
-                                      key={`${idx}-${c.code}`}
-                                      value={c.code}
-                                    >
-                                      +{c.code}
-                                    </option>
-                                  ))}
-                                </select>
-                              </div>
-                            </td>
-                            <td className="py-2 px-3">
-                              <input
-                                type="text"
-                                value={row.phone}
-                                onChange={(e) =>
-                                  handleUpdateBulkRow(
-                                    row.id,
-                                    "phone",
-                                    e.target.value,
-                                  )
-                                }
-                                className="w-full h-8 bg-white border border-gray-300 rounded px-2 text-xs focus:outline-none focus:border-emerald-500"
-                              />
-                            </td>
-                            <td className="py-2 px-3">
-                              <input
-                                type="text"
-                                value={row.message}
-                                onChange={(e) =>
-                                  handleUpdateBulkRow(
-                                    row.id,
-                                    "message",
-                                    e.target.value,
-                                  )
-                                }
-                                className="w-full h-8 bg-white border border-gray-300 rounded px-2 text-xs focus:outline-none focus:border-emerald-500"
-                              />
-                            </td>
-                            <td className="py-2 px-3">
-                              {generatedLink ? (
-                                <a
-                                  href={generatedLink}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="w-full h-8 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-semibold rounded flex items-center justify-center gap-1.5 transition-colors"
-                                >
-                                  <svg
-                                    className="w-3.5 h-3.5"
-                                    fill="currentColor"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path d="M12.012 2c-5.506 0-9.989 4.478-9.99 9.984a9.96 9.96 0 0 0 1.333 4.993L2 22l5.13-1.346a9.945 9.945 0 0 0 4.881 1.279h.005c5.505 0 9.988-4.478 9.989-9.985 0-2.67-1.037-5.18-2.92-7.062C17.18 3.036 14.67 2 12.012 2zm4.7 13.561c-.258.726-1.503 1.34-2.072 1.424-.543.08-1.25.143-3.64-.805-3.056-1.21-5.029-4.313-5.181-4.516-.151-.202-1.233-1.636-1.233-3.12 0-1.485.78-2.215 1.056-2.518.277-.303.606-.379.808-.379.202 0 .404.002.58.01.187.008.437-.03.684.568.253.614.86 2.096.936 2.247.075.152.126.328.025.529-.1.202-.152.328-.303.504-.151.176-.318.393-.454.529-.152.152-.31.318-.134.62.176.303.784 1.289 1.683 2.087.973.864 1.792 1.134 2.12 1.298.328.164.521.139.715-.075.193-.215.833-.969 1.056-1.303.223-.333.447-.278.754-.165.31.114 1.954.919 2.29 1.083.336.164.56.247.643.388.083.14.083.812-.175 1.538z" />
-                                  </svg>
-                                  Open Chat
-                                </a>
-                              ) : (
-                                <div className="h-8 bg-gray-100 rounded px-2 flex items-center justify-center">
-                                  <span className="text-[10px] text-gray-400">
-                                    ...
-                                  </span>
-                                </div>
-                              )}
-                            </td>
-                            <td className="py-2 px-4 text-center">
-                              <button
-                                onClick={() => handleDeleteBulkRow(row.id)}
-                                className="text-red-500 hover:text-red-700 text-xs font-medium"
-                              >
-                                Delete
-                              </button>
-                            </td>
-                          </tr>
-                        );
-                      })
-                    ) : (
-                      <tr>
-                        <td
-                          colSpan={6}
-                          className="py-8 text-center text-gray-500 text-sm"
-                        >
-                          No rows available. Click <strong>Import</strong> or{" "}
-                          <strong>Add Row</strong> to get started.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-
-              <div className="bg-gray-50 px-5 py-4 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-4">
-                <div className="text-sm text-gray-600">
-                  Total Rows: <strong>{bulkRows.length}</strong>
-                </div>
-                <div className="flex gap-3">
-                  <button
-                    id="copy-all-links-btn"
-                    onClick={handleCopyAllLinks}
-                    className="px-4 py-2 bg-white border border-gray-300 hover:bg-gray-100 text-gray-800 text-sm font-medium rounded-md"
-                  >
-                    {bulkCopySuccess ? "Copied!" : "Copy Links"}
-                  </button>
-                  <button
-                    id="export-csv-btn"
-                    onClick={handleExportCSV}
-                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-md"
-                  >
-                    Export CSV
-                  </button>
-                  <button
-                    id="export-txt-btn"
-                    onClick={handleExportTXT}
-                    className="px-4 py-2 bg-white border border-gray-300 hover:bg-gray-100 text-gray-800 text-sm font-medium rounded-md"
-                  >
-                    Export TXT
-                  </button>
                 </div>
               </div>
             </div>
@@ -1580,91 +1174,6 @@ export default function WhatsappLinkCreator() {
         </div>
       </footer>
 
-      {/* ── BULK IMPORT MODAL ─────────────────────────────────────── */}
-      {isBulkImportModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-8 relative">
-            <button
-              id="close-import-modal-btn"
-              onClick={() => setIsBulkImportModalOpen(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-700"
-            >
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
-
-            <div className="mb-6">
-              <h3 className="text-2xl font-bold text-gray-900">Bulk Import</h3>
-              <p className="text-sm text-gray-500 mt-1">
-                Paste phone numbers (one per line, or comma-separated).
-              </p>
-            </div>
-
-            <div className="space-y-5">
-              <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase">
-                  Phone Numbers
-                </label>
-                <textarea
-                  id="bulk-paste-input"
-                  rows={3}
-                  placeholder="919876543210, 915684575212, 12025550143..."
-                  value={bulkPasteText}
-                  onChange={(e) => setBulkPasteText(e.target.value)}
-                  className="w-full bg-white border border-gray-300 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-md p-3 text-sm text-gray-900 transition-all focus:outline-none resize-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1 uppercase">
-                  Universal Message (Optional)
-                </label>
-                <EmojiTextarea
-                  id="bulk-universal-message"
-                  value={bulkUniversalMessage}
-                  onChange={setBulkUniversalMessage}
-                  rows={2}
-                  placeholder="Message to attach to all imported numbers"
-                  charCount
-                />
-              </div>
-
-              <div className="flex items-center gap-3 pt-2">
-                <button
-                  id="do-import-btn"
-                  onClick={handleParseBulkPaste}
-                  className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-lg transition-colors shadow-sm"
-                >
-                  Import Rows
-                </button>
-                <button
-                  onClick={() => setIsBulkImportModalOpen(false)}
-                  className="px-6 py-2.5 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-semibold rounded-lg transition-colors"
-                >
-                  Cancel
-                </button>
-                {bulkImportStatus && (
-                  <span className="text-xs font-medium text-emerald-600 ml-auto">
-                    {bulkImportStatus}
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* ── GENERATED LINK MODAL ──────────────────────────────────── */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm">
@@ -1700,7 +1209,9 @@ export default function WhatsappLinkCreator() {
               <div className="w-56 h-56 bg-white border border-gray-200 p-3 rounded-xl shadow-sm flex items-center justify-center">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(shortSingleUrl)}`}
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(
+                    shortSingleUrl
+                  )}`}
                   alt="QR Code"
                   className="w-full h-full"
                 />
