@@ -1079,8 +1079,21 @@ export default function WhatsappLinkCreator() {
                       id="generate-link-btn"
                       onClick={() => setIsModalOpen(true)}
                       disabled={!phoneNumber}
-                      className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors shadow-sm text-sm"
+                      className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors shadow-sm text-sm flex items-center justify-center gap-2"
                     >
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+                        />
+                      </svg>
                       Generate WA Link
                     </button>
                   </div>
@@ -1179,66 +1192,94 @@ export default function WhatsappLinkCreator() {
         id="features"
         className="relative overflow-hidden bg-white py-24"
       >
-        {/* Subtle background echo from hero */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          aria-hidden="true"
-        >
-          <div className="absolute -top-40 -right-40 w-[500px] h-[500px] bg-emerald-100/40 rounded-full blur-3xl" />
-          <div className="absolute -bottom-32 -left-32 w-[400px] h-[400px] bg-emerald-50/60 rounded-full blur-3xl" />
-        </div>
-
-        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16 animate-fade-in-up">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-700 text-xs font-bold uppercase tracking-wider mb-4">
-              Why Choose WA.link
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* ── Top Section: Heading (left) + Metrics (right) ── */}
+          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-10 mb-16">
+            {/* Left: Heading */}
+            <div className="lg:max-w-md shrink-0">
+              <h2 className="text-3xl sm:text-4xl lg:text-[2.75rem] font-extrabold tracking-tight text-gray-900 leading-tight mb-3">
+                The Key Features Behind
+              </h2>
+              <p className="text-gray-500 text-base sm:text-lg leading-relaxed">
+                Everything you need to create professional WhatsApp links —
+                fast, private, and free.
+              </p>
             </div>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-gray-900 mb-5">
-              The Simplest Way to{" "}
-              <span className="text-emerald-600">Connect on WhatsApp</span>
-            </h2>
-            <p className="max-w-2xl mx-auto text-gray-500 text-lg leading-relaxed">
-              Whether you're a business owner, marketer, or freelancer — our
-              tool helps you create professional WhatsApp links that make it
-              easy for customers to reach you.
-            </p>
+
+            {/* Right: Metrics row */}
+            <div className="flex items-start gap-0 shrink-0">
+              {[
+                {
+                  val: "40+",
+                  label: "Countries supported with correct dial codes",
+                },
+                {
+                  val: "100%",
+                  label: "Client-side processing for complete privacy",
+                },
+                {
+                  val: "∞",
+                  label: "Links generated with no limits or signups",
+                },
+              ].map((m, i, arr) => (
+                <div
+                  key={m.label}
+                  className={`px-6 sm:px-8 ${
+                    i < arr.length - 1
+                      ? "border-r border-dashed border-gray-200"
+                      : ""
+                  }`}
+                >
+                  <span className="block text-3xl sm:text-4xl font-black text-emerald-600 tracking-tight mb-1.5">
+                    {m.val}
+                  </span>
+                  <span className="block text-xs sm:text-sm text-gray-400 leading-relaxed max-w-[160px]">
+                    {m.label}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
 
-          {/* Tight boxy grid — zero gap, square corners */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-0">
-            {features.map((f, i) => (
-              <div
-                key={f.title}
-                className="group relative p-8 border border-transparent hover:border-emerald-200 
-                     hover:bg-emerald-50/40 hover:z-10
-                     transition-all duration-300 ease-out animate-fade-in-up"
-                style={{ animationDelay: `${(i + 1) * 100}ms` }}
-              >
-                <div className="relative">
-                  {/* Icon: ghost by default, emerald on hover */}
-                  <div
-                    className="w-10 h-10 rounded-lg text-gray-400 flex items-center justify-center mb-4
-                            group-hover:text-emerald-600 group-hover:bg-emerald-100 
-                            transition-all duration-300"
-                  >
-                    {f.icon}
-                  </div>
+          {/* ── Bottom Section: Feature Cards in dashed container ── */}
+          <div className="relative border border-dashed border-gray-200 rounded-lg">
+            {/* Corner + markers */}
+            <span className="absolute -top-[7px] -left-[7px] text-gray-300 text-sm font-mono select-none leading-none">
+              +
+            </span>
+            <span className="absolute -top-[7px] -right-[7px] text-gray-300 text-sm font-mono select-none leading-none">
+              +
+            </span>
+            <span className="absolute -bottom-[7px] -left-[7px] text-gray-300 text-sm font-mono select-none leading-none">
+              +
+            </span>
+            <span className="absolute -bottom-[7px] -right-[7px] text-gray-300 text-sm font-mono select-none leading-none">
+              +
+            </span>
 
-                  <h3
-                    className="font-semibold text-gray-900 text-lg mb-2 tracking-tight 
-                           group-hover:text-emerald-700 transition-colors duration-300"
-                  >
+            <div className="grid grid-cols-1 md:grid-cols-3">
+              {features.slice(0, 3).map((f, i, arr) => (
+                <div
+                  key={f.title}
+                  className={`p-8 sm:p-10 ${
+                    i < arr.length - 1
+                      ? "md:border-r md:border-dashed md:border-gray-200"
+                      : ""
+                  }`}
+                >
+                  {/* Icon */}
+                  <div className="text-gray-400 mb-5">{f.icon}</div>
+                  {/* Title */}
+                  <h3 className="font-bold text-gray-900 text-lg mb-3 tracking-tight">
                     {f.title}
                   </h3>
-                  <p
-                    className="text-sm text-gray-500 leading-relaxed 
-                          group-hover:text-gray-600 transition-colors duration-300"
-                  >
+                  {/* Description */}
+                  <p className="text-sm text-gray-500 leading-relaxed">
                     {f.desc}
                   </p>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -1545,8 +1586,37 @@ export default function WhatsappLinkCreator() {
                 <button
                   id="copy-short-link-btn"
                   onClick={() => handleCopyLink(shortSingleUrl, "short")}
-                  className="w-full py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-lg text-sm transition-colors"
+                  className="w-full py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-lg text-sm transition-colors flex items-center justify-center gap-2"
                 >
+                  {copiedType === "short" ? (
+                    <svg
+                      className="w-4 h-4 text-emerald-600"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                  ) : (
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                      />
+                    </svg>
+                  )}
                   {copiedType === "short" ? "Copied!" : "Copy wa.me Link"}
                 </button>
                 <button
