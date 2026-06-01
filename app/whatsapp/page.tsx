@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 import dynamic from "next/dynamic";
 import type { EmojiClickData } from "emoji-picker-react";
 // Dynamically import EmojiPicker to avoid SSR issues
@@ -1570,6 +1571,18 @@ export default function WhatsappLinkCreator() {
               >
                 FAQ
               </a>
+              <Link
+                href="/privacy-policy"
+                className="hover:text-emerald-600 transition-colors"
+              >
+                Privacy Policy
+              </Link>
+              <Link
+                href="/terms-of-service"
+                className="hover:text-emerald-600 transition-colors"
+              >
+                Terms of Service
+              </Link>
             </nav>
 
             <p className="text-xs text-gray-400 text-center">

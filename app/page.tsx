@@ -80,7 +80,13 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="w-full py-8 border-t border-gray-200 bg-white text-center text-xs text-gray-500 mt-auto">
-        <p>© 2026 allLink.tools. All rights reserved.</p>
+        <div className="max-w-7xl mx-auto px-4 flex flex-col items-center gap-4">
+          <div className="flex gap-4">
+            <Link href="/privacy-policy" className="hover:text-emerald-600 transition-colors">Privacy Policy</Link>
+            <Link href="/terms-of-service" className="hover:text-emerald-600 transition-colors">Terms of Service</Link>
+          </div>
+          <p>© {new Date().getFullYear()} allLink.tools. All rights reserved.</p>
+        </div>
       </footer>
     </div>
   );
