@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import type { EmojiClickData } from "emoji-picker-react";
@@ -204,6 +204,10 @@ export default function BulkLinkCreator() {
   const [isBulkImportModalOpen, setIsBulkImportModalOpen] = useState(false);
   const [bulkUniversalMessage, setBulkUniversalMessage] = useState("");
   const [selectedCountry, setSelectedCountry] = useState<Country>(COUNTRIES[0]);
+  const [isClearConfirmOpen, setIsClearConfirmOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [copiedRowId, setCopiedRowId] = useState<string | null>(null);
+  const rowsPerPage = 4;
 
   const handleAddBulkRow = () => {
     const newRow: BulkRow = {
@@ -212,7 +216,11 @@ export default function BulkLinkCreator() {
       phone: "",
       message: "",
     };
-    setBulkRows([...bulkRows, newRow]);
+    const newRows = [...bulkRows, newRow];
+    setBulkRows(newRows);
+    // Navigate to the page where the new row was added
+    const newPage = Math.ceil(newRows.length / rowsPerPage);
+    setCurrentPage(newPage);
   };
 
   const handleUpdateBulkRow = (
@@ -226,11 +234,23 @@ export default function BulkLinkCreator() {
   };
 
   const handleDeleteBulkRow = (id: string) => {
-    setBulkRows(bulkRows.filter((row) => row.id !== id));
+    const filteredRows = bulkRows.filter((row) => row.id !== id);
+    setBulkRows(filteredRows);
+    // Adjust current page if necessary
+    const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(totalPages);
+    }
   };
 
   const handleClearBulkRows = () => {
+    setIsClearConfirmOpen(true);
+  };
+
+  const confirmClearAll = () => {
     setBulkRows([]);
+    setIsClearConfirmOpen(false);
+    setCurrentPage(1);
   };
 
   const getBulkRowLink = (row: BulkRow) => {
@@ -291,10 +311,16 @@ export default function BulkLinkCreator() {
     });
 
     if (parsedRows.length > 0) {
+      const previousCount = bulkRows.length;
       setBulkRows([...bulkRows, ...parsedRows]);
       setBulkPasteText("");
       setBulkUniversalMessage("");
       setBulkImportStatus(`Successfully imported ${successCount} numbers!`);
+      // Calculate which page the new rows will be on
+      const newTotalCount = bulkRows.length + parsedRows.length;
+      const newRowsStartIndex = previousCount;
+      const newPage = Math.floor(newRowsStartIndex / rowsPerPage) + 1;
+      setCurrentPage(newPage);
       setTimeout(() => {
         setBulkImportStatus(null);
         setIsBulkImportModalOpen(false);
@@ -316,6 +342,12 @@ export default function BulkLinkCreator() {
     navigator.clipboard.writeText(links);
     setBulkCopySuccess(true);
     setTimeout(() => setBulkCopySuccess(false), 2000);
+  };
+
+  const handleCopySingleLink = (link: string, rowId: string) => {
+    navigator.clipboard.writeText(link);
+    setCopiedRowId(rowId);
+    setTimeout(() => setCopiedRowId(null), 2000);
   };
 
   const handleExportCSV = () => {
@@ -374,13 +406,26 @@ export default function BulkLinkCreator() {
     URL.revokeObjectURL(url);
   };
 
+  // Pagination logic
+  const totalPages = Math.ceil(bulkRows.length / rowsPerPage);
+  const startIndex = (currentPage - 1) * rowsPerPage;
+  const endIndex = startIndex + rowsPerPage;
+  const currentRows = bulkRows.slice(startIndex, endIndex);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 flex flex-col font-sans selection:bg-emerald-100 selection:text-emerald-900">
       {/* Navigation Header */}
-      <header className="sticky top-0 z-40 w-full border-b border-gray-200 bg-white">
+      <header className="sticky top-0 z-40 w-full bg-white/75 backdrop-blur-xl border-b border-emerald-100/40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-emerald-600 rounded flex items-center justify-center">
+          <Link
+            href="/"
+            className="flex items-center gap-2.5 group cursor-pointer"
+          >
+            <div className="w-9 h-9 bg-emerald-600 rounded-xl flex items-center justify-center shadow-md shadow-emerald-200/40 group-hover:shadow-lg group-hover:shadow-emerald-200/50 group-hover:scale-105 transition-all duration-300">
               <svg
                 className="w-5 h-5 text-white"
                 viewBox="0 0 24 24"
@@ -394,11 +439,11 @@ export default function BulkLinkCreator() {
               </svg>
             </div>
             <span className="font-bold text-xl tracking-tight text-gray-900">
-              allLink<span className="text-gray-500">.tools</span>
+              WA<span className="text-emerald-600">.link</span>
             </span>
           </Link>
           <Link
-            href="/whatsapp"
+            href="/"
             className="text-sm text-emerald-600 hover:text-emerald-700 font-medium"
           >
             Back to Single Link Creator
@@ -478,8 +523,9 @@ export default function BulkLinkCreator() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 bg-white">
-                  {bulkRows.length > 0 ? (
-                    bulkRows.map((row, idx) => {
+                  {currentRows.length > 0 ? (
+                    currentRows.map((row, idx) => {
+                      const globalIdx = startIndex + idx;
                       const generatedLink = getBulkRowLink(row);
                       const rowCountry =
                         COUNTRIES.find((c) => c.code === row.countryCode) ||
@@ -487,7 +533,7 @@ export default function BulkLinkCreator() {
                       return (
                         <tr key={row.id} className="hover:bg-gray-50 text-sm">
                           <td className="py-2 px-4 text-gray-500 text-center">
-                            {idx + 1}
+                            {globalIdx + 1}
                           </td>
                           <td className="py-2 px-3">
                             <div className="flex items-center gap-2 w-full">
@@ -557,21 +603,61 @@ export default function BulkLinkCreator() {
                           </td>
                           <td className="py-2 px-3">
                             {generatedLink ? (
-                              <a
-                                href={generatedLink}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="w-full h-8 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-semibold rounded flex items-center justify-center gap-1.5 transition-colors"
-                              >
-                                <svg
-                                  className="w-3.5 h-3.5"
-                                  fill="currentColor"
-                                  viewBox="0 0 24 24"
+                              <div className="flex gap-2">
+                                <a
+                                  href={generatedLink}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="flex-1 h-8 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-semibold rounded flex items-center justify-center gap-1.5 transition-colors"
                                 >
-                                  <path d="M12.012 2c-5.506 0-9.989 4.478-9.99 9.984a9.96 9.96 0 0 0 1.333 4.993L2 22l5.13-1.346a9.945 9.945 0 0 0 4.881 1.279h.005c5.505 0 9.988-4.478 9.989-9.985 0-2.67-1.037-5.18-2.92-7.062C17.18 3.036 14.67 2 12.012 2zm4.7 13.561c-.258.726-1.503 1.34-2.072 1.424-.543.08-1.25.143-3.64-.805-3.056-1.21-5.029-4.313-5.181-4.516-.151-.202-1.233-1.636-1.233-3.12 0-1.485.78-2.215 1.056-2.518.277-.303.606-.379.808-.379.202 0 .404.002.58.01.187.008.437-.03.684.568.253.614.86 2.096.936 2.247.075.152.126.328.025.529-.1.202-.152.328-.303.504-.151.176-.318.393-.454.529-.152.152-.31.318-.134.62.176.303.784 1.289 1.683 2.087.973.864 1.792 1.134 2.12 1.298.328.164.521.139.715-.075.193-.215.833-.969 1.056-1.303.223-.333.447-.278.754-.165.31.114 1.954.919 2.29 1.083.336.164.56.247.643.388.083.14.083.812-.175 1.538z" />
-                                </svg>
-                                Open Chat
-                              </a>
+                                  <svg
+                                    className="w-3.5 h-3.5"
+                                    fill="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path d="M12.012 2c-5.506 0-9.989 4.478-9.99 9.984a9.96 9.96 0 0 0 1.333 4.993L2 22l5.13-1.346a9.945 9.945 0 0 0 4.881 1.279h.005c5.505 0 9.988-4.478 9.989-9.985 0-2.67-1.037-5.18-2.92-7.062C17.18 3.036 14.67 2 12.012 2zm4.7 13.561c-.258.726-1.503 1.34-2.072 1.424-.543.08-1.25.143-3.64-.805-3.056-1.21-5.029-4.313-5.181-4.516-.151-.202-1.233-1.636-1.233-3.12 0-1.485.78-2.215 1.056-2.518.277-.303.606-.379.808-.379.202 0 .404.002.58.01.187.008.437-.03.684.568.253.614.86 2.096.936 2.247.075.152.126.328.025.529-.1.202-.152.328-.303.504-.151.176-.318.393-.454.529-.152.152-.31.318-.134.62.176.303.784 1.289 1.683 2.087.973.864 1.792 1.134 2.12 1.298.328.164.521.139.715-.075.193-.215.833-.969 1.056-1.303.223-.333.447-.278.754-.165.31.114 1.954.919 2.29 1.083.336.164.56.247.643.388.083.14.083.812-.175 1.538z" />
+                                  </svg>
+                                  Open
+                                </a>
+                                <button
+                                  onClick={() =>
+                                    handleCopySingleLink(generatedLink, row.id)
+                                  }
+                                  className="h-8 px-3 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-semibold rounded flex items-center justify-center gap-1.5 transition-colors"
+                                  title="Copy link"
+                                >
+                                  {copiedRowId === row.id ? (
+                                    <svg
+                                      className="w-3.5 h-3.5"
+                                      fill="none"
+                                      viewBox="0 0 24 24"
+                                      stroke="currentColor"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth="2"
+                                        d="M5 13l4 4L19 7"
+                                      />
+                                    </svg>
+                                  ) : (
+                                    <svg
+                                      className="w-3.5 h-3.5"
+                                      fill="none"
+                                      viewBox="0 0 24 24"
+                                      stroke="currentColor"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth="2"
+                                        d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                                      />
+                                    </svg>
+                                  )}
+                                  {copiedRowId === row.id ? "" : ""}
+                                </button>
+                              </div>
                             ) : (
                               <div className="h-8 bg-gray-100 rounded px-2 flex items-center justify-center">
                                 <span className="text-[10px] text-gray-400">
@@ -606,6 +692,47 @@ export default function BulkLinkCreator() {
               </table>
             </div>
 
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="bg-gray-50 px-5 py-4 border-t border-gray-200 flex items-center justify-between">
+                <div className="text-sm text-gray-600">
+                  Showing {startIndex + 1}-{Math.min(endIndex, bulkRows.length)}{" "}
+                  of {bulkRows.length} rows
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="h-8 px-3 bg-white border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium text-gray-700 rounded-md transition-colors"
+                  >
+                    Previous
+                  </button>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (page) => (
+                      <button
+                        key={page}
+                        onClick={() => handlePageChange(page)}
+                        className={`h-8 w-8 text-sm font-medium rounded-md transition-colors ${
+                          currentPage === page
+                            ? "bg-emerald-600 text-white"
+                            : "bg-white border border-gray-300 hover:bg-gray-100 text-gray-700"
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    )
+                  )}
+                  <button
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="h-8 px-3 bg-white border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium text-gray-700 rounded-md transition-colors"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
+
             <div className="bg-gray-50 px-5 py-4 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-4">
               <div className="text-sm text-gray-600">
                 Total Rows: <strong>{bulkRows.length}</strong>
@@ -634,6 +761,73 @@ export default function BulkLinkCreator() {
           </div>
         </div>
       </main>
+
+      {/* Clear All Confirmation Modal */}
+      {isClearConfirmOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 relative">
+            <button
+              onClick={() => setIsClearConfirmOpen(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-700"
+            >
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg
+                  className="w-8 h-8 text-red-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">
+                Clear All Rows?
+              </h3>
+              <p className="text-sm text-gray-600">
+                This will remove all {bulkRows.length} row
+                {bulkRows.length !== 1 ? "s" : ""} from your list. This action
+                cannot be undone.
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setIsClearConfirmOpen(false)}
+                className="flex-1 py-2.5 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-semibold rounded-lg transition-colors text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmClearAll}
+                className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors text-sm"
+              >
+                Clear All
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Bulk Import Modal */}
       {isBulkImportModalOpen && (
@@ -717,16 +911,44 @@ export default function BulkLinkCreator() {
       )}
 
       {/* Footer */}
-      <footer className="w-full py-8 border-t border-gray-200 bg-white text-center text-xs text-gray-500 mt-auto">
+      <footer className="bg-white border-t border-gray-200 py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <p className="mb-2">© 2026 allLink.tools. All rights reserved.</p>
-          <div className="space-x-4">
-            <Link href="/privacy-policy" className="hover:text-emerald-600">
-              Privacy Policy
-            </Link>
-            <Link href="/terms-of-service" className="hover:text-emerald-600">
-              Terms of Service
-            </Link>
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 bg-emerald-600 rounded flex items-center justify-center">
+                <svg
+                  className="w-4 h-4 text-white"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+                </svg>
+              </div>
+              <span className="font-bold text-gray-900">
+                WA<span className="text-gray-500">.link</span>
+              </span>
+            </div>
+
+            <nav className="flex items-center gap-6 text-sm text-gray-500">
+              <a href="/" className="hover:text-emerald-600 transition-colors">
+                Single Link
+              </a>
+              <a
+                href="/bulk"
+                className="hover:text-emerald-600 transition-colors"
+              >
+                Bulk Creator
+              </a>
+            </nav>
+
+            <p className="text-xs text-gray-400 text-center">
+              © {new Date().getFullYear()} WA.link — Free WhatsApp Link
+              Generator. Not affiliated with WhatsApp or Meta.
+            </p>
           </div>
         </div>
       </footer>
