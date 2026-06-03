@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { buildMetadata, SITE_URL } from "../seo";
+import { buildMetadata, SITE_URL } from "@/lib/seo";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 
 // ─── Page Metadata (noindex for thin content) ────────────────────────────────
 export const metadata: Metadata = buildMetadata({
@@ -14,35 +16,7 @@ export const metadata: Metadata = buildMetadata({
 export default function PrivacyPolicy() {
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 flex flex-col font-sans">
-      {/* Navigation Header */}
-      <header className="sticky top-0 z-40 w-full border-b border-gray-200 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-emerald-600 rounded flex items-center justify-center">
-              <svg
-                className="w-5 h-5 text-white"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-              </svg>
-            </div>
-            <span className="font-bold text-xl tracking-tight text-gray-900">
-              allLink<span className="text-gray-500">.tools</span>
-            </span>
-          </Link>
-          <Link
-            href="/"
-            className="text-sm text-emerald-600 hover:text-emerald-700 font-medium"
-          >
-            Back to Home
-          </Link>
-        </div>
-      </header>
+      <Header />
 
       {/* Main Content */}
       <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -74,8 +48,8 @@ export default function PrivacyPolicy() {
             </p>
             <ul className="list-disc pl-6 space-y-2 text-gray-700">
               <li>
-                Phone numbers (yours and recipients') for generating WhatsApp
-                links
+                Phone numbers (yours and recipients&apos;) for generating
+                WhatsApp links
               </li>
               <li>Custom message content for pre-filled WhatsApp messages</li>
               <li>
@@ -159,8 +133,9 @@ export default function PrivacyPolicy() {
             </h3>
             <p className="text-gray-700 leading-relaxed mb-4">
               Google, as a third-party vendor, uses cookies to serve ads.
-              Google's use of the DART cookie enables it to serve ads to users
-              based on their visit to our site and other sites on the Internet.
+              Google&apos;s use of the DART cookie enables it to serve ads to
+              users based on their visit to our site and other sites on the
+              Internet.
             </p>
 
             <h3 className="text-xl font-medium text-gray-800 mb-2">
@@ -193,17 +168,17 @@ export default function PrivacyPolicy() {
             </ul>
 
             <h3 className="text-xl font-medium text-gray-800 mt-6 mb-2">
-              4.3 Google's Privacy Policy
+              4.3 Google&apos;s Privacy Policy
             </h3>
             <p className="text-gray-700 leading-relaxed">
-              Google's use of advertising cookies is governed by{" "}
+              Google&apos;s use of advertising cookies is governed by{" "}
               <a
                 href="https://policies.google.com/technologies/ads"
                 className="text-emerald-600 hover:text-emerald-700 underline"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Google's Privacy Policy
+                Google&apos;s Privacy Policy
               </a>
               . We recommend reviewing this policy for more information.
             </p>
@@ -214,10 +189,11 @@ export default function PrivacyPolicy() {
               5. Third-Party Services
             </h2>
             <p className="text-gray-700 leading-relaxed mb-4">
-              Our service integrates with WhatsApp's public API (click-to-chat
-              functionality). When you generate a link and click it, you are
-              redirected to WhatsApp's platform, which is governed by WhatsApp's
-              own Privacy Policy and Terms of Service.
+              Our service integrates with WhatsApp&apos;s public API
+              (click-to-chat functionality). When you generate a link and click
+              it, you are redirected to WhatsApp&apos;s platform, which is
+              governed by WhatsApp&apos;s own Privacy Policy and Terms of
+              Service.
             </p>
             <p className="text-gray-700 leading-relaxed">
               We are not responsible for the privacy practices or content of
@@ -249,7 +225,7 @@ export default function PrivacyPolicy() {
 
           <section>
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">
-              7. Children's Privacy
+              7. Children&apos;s Privacy
             </h2>
             <p className="text-gray-700 leading-relaxed">
               Our service is not intended for children under 16 years of age. We
@@ -266,8 +242,8 @@ export default function PrivacyPolicy() {
             <p className="text-gray-700 leading-relaxed">
               We may update this Privacy Policy from time to time. We will
               notify you of any changes by posting the new policy on this page
-              with an updated "Last updated" date. Your continued use of our
-              service after changes constitutes acceptance of the updated
+              with an updated &quot;Last updated&quot; date. Your continued use
+              of our service after changes constitutes acceptance of the updated
               policy.
             </p>
           </section>
@@ -300,20 +276,7 @@ export default function PrivacyPolicy() {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="w-full py-8 border-t border-gray-200 bg-white text-center text-xs text-gray-500 mt-auto">
-        <div className="max-w-4xl mx-auto px-4">
-          <p className="mb-2">© 2026 allLink.tools. All rights reserved.</p>
-          <div className="space-x-4">
-            <Link href="/privacy-policy" className="hover:text-emerald-600">
-              Privacy Policy
-            </Link>
-            <Link href="/terms-of-service" className="hover:text-emerald-600">
-              Terms of Service
-            </Link>
-          </div>
-        </div>
-      </footer>
+      <Footer brandName="allLink" brandHighlight=".tools" />
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { defaultMetadata, SITE_URL, SITE_NAME } from "./seo";
-import { JsonLd } from "./components/JsonLd";
+import { defaultMetadata, SITE_URL, SITE_NAME } from "@/lib/seo";
+import { JsonLd } from "@/components/ui/JsonLd";
 import "./globals.css";
 
 const geistSans = Geist({

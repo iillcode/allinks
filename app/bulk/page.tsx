@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import { buildMetadata, SITE_URL } from "../seo";
-import { JsonLd } from "../components/JsonLd";
-import BulkLinkCreator from "../components/BulkLinkCreator";
+import { buildMetadata, SITE_URL } from "@/lib/seo";
+import { JsonLd } from "@/components/ui/JsonLd";
+import BulkLinkCreator from "@/components/BulkLinkCreator";
 
 // ─── Page Metadata ───────────────────────────────────────────────────────────
 export const metadata: Metadata = buildMetadata({

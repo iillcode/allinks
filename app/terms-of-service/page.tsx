@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { buildMetadata, SITE_URL } from "../seo";
+import { buildMetadata, SITE_URL } from "@/lib/seo";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 
 // ─── Page Metadata (noindex for thin content) ────────────────────────────────
 export const metadata: Metadata = buildMetadata({
@@ -14,35 +15,7 @@ export const metadata: Metadata = buildMetadata({
 export default function TermsOfService() {
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 flex flex-col font-sans">
-      {/* Navigation Header */}
-      <header className="sticky top-0 z-40 w-full border-b border-gray-200 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-emerald-600 rounded flex items-center justify-center">
-              <svg
-                className="w-5 h-5 text-white"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-              </svg>
-            </div>
-            <span className="font-bold text-xl tracking-tight text-gray-900">
-              allLink<span className="text-gray-500">.tools</span>
-            </span>
-          </Link>
-          <Link
-            href="/"
-            className="text-sm text-emerald-600 hover:text-emerald-700 font-medium"
-          >
-            Back to Home
-          </Link>
-        </div>
-      </header>
+      <Header />
 
       {/* Main Content */}
       <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -89,8 +62,8 @@ export default function TermsOfService() {
               <li>Preview WhatsApp chat mockups before generating links</li>
             </ul>
             <p className="text-gray-700 leading-relaxed mt-4">
-              Our service uses WhatsApp's public "click-to-chat" API
-              functionality. We are not affiliated with, endorsed by, or
+              Our service uses WhatsApp&apos;s public &quot;click-to-chat&quot;
+              API functionality. We are not affiliated with, endorsed by, or
               connected to WhatsApp Inc. or Meta Platforms, Inc.
             </p>
           </section>
@@ -140,7 +113,7 @@ export default function TermsOfService() {
             </h3>
             <ul className="list-disc pl-6 space-y-2 text-gray-700">
               <li>
-                Comply with WhatsApp's Terms of Service and Commerce Policy
+                Comply with WhatsApp&apos;s Terms of Service and Commerce Policy
               </li>
               <li>
                 Only generate links for phone numbers you have permission to use
@@ -150,7 +123,7 @@ export default function TermsOfService() {
                 links
               </li>
               <li>
-                Ensure your messages comply with WhatsApp's acceptable use
+                Ensure your messages comply with WhatsApp&apos;s acceptable use
                 guidelines
               </li>
             </ul>
@@ -218,7 +191,7 @@ export default function TermsOfService() {
                 advertisements
               </li>
               <li>
-                Clicking on ads is subject to Google's terms and advertiser
+                Clicking on ads is subject to Google&apos;s terms and advertiser
                 policies
               </li>
             </ul>
@@ -230,13 +203,13 @@ export default function TermsOfService() {
             </h2>
 
             <h3 className="text-xl font-medium text-gray-800 mb-2">
-              7.1 Service Provided "As Is"
+              7.1 Service Provided &quot;As Is&quot;
             </h3>
             <p className="text-gray-700 leading-relaxed">
-              The service is provided on an "as is" and "as available" basis
-              without warranties of any kind, either express or implied,
-              including but not limited to merchantability, fitness for a
-              particular purpose, and non-infringement.
+              The service is provided on an &quot;as is&quot; and &quot;as
+              available&quot; basis without warranties of any kind, either
+              express or implied, including but not limited to merchantability,
+              fitness for a particular purpose, and non-infringement.
             </p>
 
             <h3 className="text-xl font-medium text-gray-800 mb-2 mt-6">
@@ -249,7 +222,7 @@ export default function TermsOfService() {
               <li>The service will be uninterrupted, secure, or error-free</li>
               <li>
                 Generated links will always work as expected (depends on
-                WhatsApp's systems)
+                WhatsApp&apos;s systems)
               </li>
               <li>The quality of the service will meet your expectations</li>
               <li>Any defects will be corrected immediately</li>
@@ -338,9 +311,9 @@ export default function TermsOfService() {
               <li>Change, suspend, or restrict access to the service</li>
             </ul>
             <p className="text-gray-700 leading-relaxed mt-4">
-              We will update the "Last updated" date when changes are made. Your
-              continued use of the service after changes constitutes acceptance
-              of the new terms.
+              We will update the &quot;Last updated&quot; date when changes are
+              made. Your continued use of the service after changes constitutes
+              acceptance of the new terms.
             </p>
           </section>
 
@@ -398,20 +371,7 @@ export default function TermsOfService() {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="w-full py-8 border-t border-gray-200 bg-white text-center text-xs text-gray-500 mt-auto">
-        <div className="max-w-4xl mx-auto px-4">
-          <p className="mb-2">© 2026 allLink.tools. All rights reserved.</p>
-          <div className="space-x-4">
-            <Link href="/privacy-policy" className="hover:text-emerald-600">
-              Privacy Policy
-            </Link>
-            <Link href="/terms-of-service" className="hover:text-emerald-600">
-              Terms of Service
-            </Link>
-          </div>
-        </div>
-      </footer>
+      <Footer brandName="allLink" brandHighlight=".tools" />
     </div>
   );
 }

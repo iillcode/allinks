@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import { buildMetadata, SITE_URL } from "./seo";
-import { JsonLd } from "./components/JsonLd";
-import WhatsappLinkCreator from "./components/WhatsappLinkCreator";
+import { buildMetadata, SITE_URL } from "@/lib/seo";
+import { JsonLd } from "@/components/ui/JsonLd";
+import WhatsappLinkCreator from "@/components/WhatsappLinkCreator";
 
 // ─── Page Metadata ───────────────────────────────────────────────────────────
 export const metadata: Metadata = buildMetadata({
