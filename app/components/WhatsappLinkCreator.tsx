@@ -207,6 +207,7 @@ export default function WhatsappLinkCreator() {
   const [countrySearch, setCountrySearch] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [qrLoading, setQrLoading] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -772,18 +773,18 @@ export default function WhatsappLinkCreator() {
           </svg>
 
           {/* Soft glow orbs — white top-left, visible green bottom-right */}
-          <div className="absolute top-10 left-10 w-96 h-96 bg-white rounded-full blur-3xl opacity-90" />
-          <div className="absolute bottom-10 right-10 w-[28rem] h-[28rem] bg-emerald-200/50 rounded-full blur-3xl" />
+          <div className="absolute top-10 left-10 w-64 sm:w-96 h-64 sm:h-96 bg-white rounded-full blur-3xl opacity-90" />
+          <div className="absolute bottom-10 right-10 w-64 sm:w-[28rem] h-64 sm:h-[28rem] bg-emerald-200/50 rounded-full blur-3xl" />
         </div>
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-28 text-center">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20 lg:pt-24 pb-16 sm:pb-20 lg:pb-28 text-center">
           {/* Heading */}
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-gray-900 mb-6 leading-tight animate-fade-in-up animation-delay-100">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-gray-900 mb-4 sm:mb-6 leading-tight animate-fade-in-up animation-delay-100">
             Create Your WhatsApp Link{" "}
             <span className="relative inline-block">
               <span className="relative z-10 text-emerald-600">in Seconds</span>
               <svg
-                className="absolute -bottom-1 left-0 w-full h-2.5 text-emerald-200"
+                className="absolute -bottom-1 left-0 w-full h-2 sm:h-2.5 text-emerald-200"
                 viewBox="0 0 200 8"
                 fill="none"
                 preserveAspectRatio="none"
@@ -799,17 +800,17 @@ export default function WhatsappLinkCreator() {
           </h1>
 
           {/* Subtitle */}
-          <p className="max-w-2xl mx-auto text-lg sm:text-xl text-gray-600 leading-relaxed mb-12 animate-fade-in-up animation-delay-200">
+          <p className="max-w-2xl mx-auto text-base sm:text-lg lg:text-xl text-gray-600 leading-relaxed mb-8 sm:mb-12 animate-fade-in-up animation-delay-200">
             Generate direct WhatsApp links with custom messages for your
             business, marketing campaigns, or personal use. No signup required —
             completely free and private.
           </p>
 
           {/* Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in-up animation-delay-300">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center animate-fade-in-up animation-delay-300 px-4 sm:px-0">
             <a
               href="#tool"
-              className="group inline-flex items-center gap-2 px-8 py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg shadow-emerald-200/60 transition-all duration-300 hover:scale-[1.03] hover:shadow-xl text-sm"
+              className="group inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg shadow-emerald-200/60 transition-all duration-300 hover:scale-[1.03] hover:shadow-xl text-sm"
             >
               <svg
                 className="w-5 h-5 transition-transform group-hover:rotate-12"
@@ -835,7 +836,7 @@ export default function WhatsappLinkCreator() {
             </a>
             <a
               href="#features"
-              className="group inline-flex items-center gap-2 px-8 py-4 bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 font-semibold rounded-xl shadow-sm transition-all duration-300 hover:scale-[1.03] hover:border-gray-300 text-sm"
+              className="group inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 font-semibold rounded-xl shadow-sm transition-all duration-300 hover:scale-[1.03] hover:border-gray-300 text-sm"
             >
               See How It Works
               <svg
@@ -855,7 +856,7 @@ export default function WhatsappLinkCreator() {
           </div>
 
           {/* Stats row */}
-          <div className="mt-20 flex flex-wrap justify-center items-center gap-0 animate-fade-in-up animation-delay-500">
+          <div className="mt-12 sm:mt-16 lg:mt-20 flex flex-wrap justify-center items-center gap-0 animate-fade-in-up animation-delay-500">
             {[
               ["Free Forever", "No Signup Required"],
               ["Single & Bulk", "Link Generation"],
@@ -863,16 +864,16 @@ export default function WhatsappLinkCreator() {
               ["QR Codes", "Instant Download"],
             ].map(([val, label], i, arr) => (
               <div key={label} className="flex items-center">
-                <div className="px-8 py-4 text-center">
-                  <div className="text-3xl font-black text-emerald-600 tabular-nums">
+                <div className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 text-center">
+                  <div className="text-2xl sm:text-3xl font-black text-emerald-600 tabular-nums">
                     {val}
                   </div>
-                  <div className="text-sm font-medium text-gray-500 mt-1">
+                  <div className="text-xs sm:text-sm font-medium text-gray-500 mt-1">
                     {label}
                   </div>
                 </div>
                 {i < arr.length - 1 && (
-                  <div className="hidden sm:block w-px h-10 bg-gray-200" />
+                  <div className="hidden sm:block w-px h-8 sm:h-10 bg-gray-200" />
                 )}
               </div>
             ))}
@@ -886,7 +887,7 @@ export default function WhatsappLinkCreator() {
       {/* ── TOOL SECTION ──────────────────────────────────────────── */}
       <main
         id="tool"
-        className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-14"
+        className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 lg:py-14"
       >
         {/* Tab Selector */}
         <div className="flex justify-center mb-6">
@@ -924,7 +925,7 @@ export default function WhatsappLinkCreator() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
             {/* Form Column */}
             <div className="lg:col-span-7 space-y-6">
-              <div className="bg-white border border-gray-200 rounded-xl p-6 sm:p-8 shadow-sm">
+              <div className="bg-white border border-gray-200 rounded-xl p-4 sm:p-6 lg:p-8 shadow-sm">
                 <div className="space-y-6">
                   {/* Header */}
                   <div>
@@ -1077,7 +1078,10 @@ export default function WhatsappLinkCreator() {
                   <div className="pt-2">
                     <button
                       id="generate-link-btn"
-                      onClick={() => setIsModalOpen(true)}
+                      onClick={() => {
+                        setQrLoading(true);
+                        setIsModalOpen(true);
+                      }}
                       disabled={!phoneNumber}
                       className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors shadow-sm text-sm flex items-center justify-center gap-2"
                     >
@@ -1102,8 +1106,8 @@ export default function WhatsappLinkCreator() {
             </div>
 
             {/* Live Preview Column */}
-            <div className="lg:col-span-5 flex justify-center sticky top-24">
-              <div className="relative w-80 h-[590px] rounded-[40px] bg-white border-[8px] border-gray-200 shadow-xl overflow-hidden shrink-0 flex flex-col">
+            <div className="lg:col-span-5 flex justify-center lg:sticky lg:top-24">
+              <div className="relative w-[260px] sm:w-[280px] lg:w-80 h-[480px] sm:h-[530px] lg:h-[590px] rounded-[32px] sm:rounded-[36px] lg:rounded-[40px] bg-white border-[6px] sm:border-[7px] lg:border-[8px] border-gray-200 shadow-xl overflow-hidden shrink-0 flex flex-col">
                 <div className="h-6 bg-[#075e54] text-white px-5 flex items-center justify-between text-xs font-medium select-none">
                   <span>{currentTime}</span>
                   <span>LTE</span>
@@ -1190,14 +1194,14 @@ export default function WhatsappLinkCreator() {
       {/* ── FEATURES / ABOUT SECTION ──────────────────────────────── */}
       <section
         id="features"
-        className="relative overflow-hidden bg-white py-24"
+        className="relative overflow-hidden bg-white py-16 sm:py-20 lg:py-24"
       >
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* ── Top Section: Heading (left) + Metrics (right) ── */}
-          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-10 mb-16">
+          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-8 lg:gap-10 mb-10 sm:mb-12 lg:mb-16">
             {/* Left: Heading */}
             <div className="lg:max-w-md shrink-0">
-              <h2 className="text-3xl sm:text-4xl lg:text-[2.75rem] font-extrabold tracking-tight text-gray-900 leading-tight mb-3">
+              <h2 className="text-2xl sm:text-3xl lg:text-[2.75rem] font-extrabold tracking-tight text-gray-900 leading-tight mb-3">
                 The Key Features Behind
               </h2>
               <p className="text-gray-500 text-base sm:text-lg leading-relaxed">
@@ -1206,8 +1210,8 @@ export default function WhatsappLinkCreator() {
               </p>
             </div>
 
-            {/* Right: Metrics row */}
-            <div className="flex items-start gap-0 shrink-0">
+            {/* Right: Metrics row - stack on mobile, row on sm+ */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-start gap-6 sm:gap-0 shrink-0">
               {[
                 {
                   val: "40+",
@@ -1224,16 +1228,16 @@ export default function WhatsappLinkCreator() {
               ].map((m, i, arr) => (
                 <div
                   key={m.label}
-                  className={`px-6 sm:px-8 ${
+                  className={`px-0 sm:px-6 lg:px-8 ${
                     i < arr.length - 1
-                      ? "border-r border-dashed border-gray-200"
+                      ? "sm:border-r sm:border-dashed sm:border-gray-200"
                       : ""
                   }`}
                 >
                   <span className="block text-3xl sm:text-4xl font-black text-emerald-600 tracking-tight mb-1.5">
                     {m.val}
                   </span>
-                  <span className="block text-xs sm:text-sm text-gray-400 leading-relaxed max-w-[160px]">
+                  <span className="block text-xs sm:text-sm text-gray-400 leading-relaxed max-w-[200px] sm:max-w-[160px]">
                     {m.label}
                   </span>
                 </div>
@@ -1261,7 +1265,7 @@ export default function WhatsappLinkCreator() {
               {features.slice(0, 3).map((f, i, arr) => (
                 <div
                   key={f.title}
-                  className={`p-8 sm:p-10 ${
+                  className={`p-6 sm:p-8 lg:p-10 ${
                     i < arr.length - 1
                       ? "md:border-r md:border-dashed md:border-gray-200"
                       : ""
@@ -1285,28 +1289,28 @@ export default function WhatsappLinkCreator() {
       </section>
 
       {/* ── HOW TO USE SECTION ─────────────────────────────────────── */}
-      <section id="how-to-use" className="py-20 bg-gray-50">
+      <section id="how-to-use" className="py-12 sm:py-16 lg:py-20 bg-gray-50">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-14">
+          <div className="text-center mb-8 sm:mb-10 lg:mb-14">
             <p className="text-xs font-bold uppercase tracking-widest text-emerald-600 mb-3">
               Getting Started
             </p>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-4">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 mb-3 sm:mb-4">
               How to Create a WhatsApp Link in 3 Steps
             </h2>
-            <p className="max-w-2xl mx-auto text-gray-500 text-lg">
+            <p className="max-w-2xl mx-auto text-gray-500 text-base sm:text-lg">
               No signup, no downloads. Generate your first link in under a
               minute.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
             {/* Step 1 */}
-            <div className="relative bg-white rounded-2xl p-8 shadow-sm border border-gray-100 text-center">
-              <div className="w-14 h-14 bg-emerald-100 text-emerald-700 rounded-2xl flex items-center justify-center mx-auto mb-5 text-2xl font-extrabold">
+            <div className="relative bg-white rounded-2xl p-5 sm:p-6 lg:p-8 shadow-sm border border-gray-100 text-center">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 bg-emerald-100 text-emerald-700 rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-5 text-xl sm:text-2xl font-extrabold">
                 1
               </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">
+              <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-2">
                 Select Country &amp; Enter Number
               </h3>
               <p className="text-sm text-gray-600 leading-relaxed">
@@ -1317,11 +1321,11 @@ export default function WhatsappLinkCreator() {
             </div>
 
             {/* Step 2 */}
-            <div className="relative bg-white rounded-2xl p-8 shadow-sm border border-gray-100 text-center">
-              <div className="w-14 h-14 bg-emerald-100 text-emerald-700 rounded-2xl flex items-center justify-center mx-auto mb-5 text-2xl font-extrabold">
+            <div className="relative bg-white rounded-2xl p-5 sm:p-6 lg:p-8 shadow-sm border border-gray-100 text-center">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 bg-emerald-100 text-emerald-700 rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-5 text-xl sm:text-2xl font-extrabold">
                 2
               </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">
+              <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-2">
                 Add a Custom Message (Optional)
               </h3>
               <p className="text-sm text-gray-600 leading-relaxed">
@@ -1332,11 +1336,11 @@ export default function WhatsappLinkCreator() {
             </div>
 
             {/* Step 3 */}
-            <div className="relative bg-white rounded-2xl p-8 shadow-sm border border-gray-100 text-center">
-              <div className="w-14 h-14 bg-emerald-100 text-emerald-700 rounded-2xl flex items-center justify-center mx-auto mb-5 text-2xl font-extrabold">
+            <div className="relative bg-white rounded-2xl p-5 sm:p-6 lg:p-8 shadow-sm border border-gray-100 text-center">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 bg-emerald-100 text-emerald-700 rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-5 text-xl sm:text-2xl font-extrabold">
                 3
               </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">
+              <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-2">
                 Generate &amp; Share Your Link
               </h3>
               <p className="text-sm text-gray-600 leading-relaxed">
@@ -1348,8 +1352,8 @@ export default function WhatsappLinkCreator() {
           </div>
 
           {/* CTA to Bulk */}
-          <div className="mt-12 text-center">
-            <p className="text-gray-600 mb-4">
+          <div className="mt-8 sm:mt-10 lg:mt-12 text-center">
+            <p className="text-sm sm:text-base text-gray-600 mb-4">
               Need links for <strong>multiple numbers</strong>? Use our{" "}
               <Link
                 href="/bulk"
@@ -1364,13 +1368,13 @@ export default function WhatsappLinkCreator() {
       </section>
 
       {/* ── FAQ SECTION ───────────────────────────────────────────── */}
-      <section id="faq" className="py-20 bg-white">
+      <section id="faq" className="py-12 sm:py-16 lg:py-20 bg-white">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-14">
+          <div className="text-center mb-8 sm:mb-10 lg:mb-14">
             <p className="text-xs font-bold uppercase tracking-widest text-emerald-600 mb-3">
               FAQ
             </p>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900">
               Frequently Asked Questions
             </h2>
           </div>
@@ -1388,7 +1392,7 @@ export default function WhatsappLinkCreator() {
                 <button
                   id={`faq-${i}`}
                   onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                  className={`w-full flex items-center justify-between px-6 py-5 text-left transition-all duration-300 ${
+                  className={`w-full flex items-center justify-between px-4 sm:px-6 py-4 sm:py-5 text-left transition-all duration-300 ${
                     openFaq === i
                       ? "bg-gray-50/60 border-b border-gray-100"
                       : "hover:bg-gray-50/40 border-b border-transparent"
@@ -1432,7 +1436,7 @@ export default function WhatsappLinkCreator() {
                   }`}
                 >
                   <div className="overflow-hidden">
-                    <div className="px-6 pb-5 pt-4 text-sm text-gray-600 leading-relaxed">
+                    <div className="px-4 sm:px-6 pb-4 sm:pb-5 pt-3 sm:pt-4 text-sm text-gray-600 leading-relaxed">
                       {faq.a}
                     </div>
                   </div>
@@ -1444,96 +1448,76 @@ export default function WhatsappLinkCreator() {
       </section>
 
       {/* ── FOOTER ────────────────────────────────────────────────── */}
-      <footer className="bg-white border-t border-gray-200 py-10">
+      <footer className="bg-white border-t border-gray-200 py-8 sm:py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 bg-emerald-600 rounded flex items-center justify-center">
-                <svg
-                  className="w-4 h-4 text-white"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-                </svg>
+          <div className="flex flex-col items-start gap-4">
+            {/* Company name + description */}
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 bg-emerald-600 rounded flex items-center justify-center">
+                  <svg
+                    className="w-4 h-4 text-white"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+                  </svg>
+                </div>
+                <span className="font-bold text-gray-900">
+                  WA<span className="text-gray-500">.link</span>
+                </span>
               </div>
-              <span className="font-bold text-gray-900">
-                WA<span className="text-gray-500">.link</span>
-              </span>
+              <p className="text-sm text-gray-500 max-w-md leading-relaxed">
+                Free WhatsApp link generator — create click-to-chat links with
+                custom messages, emojis, and QR codes. Fast, private, and
+                secure.
+              </p>
             </div>
 
-            <nav className="flex items-center gap-6 text-sm text-gray-500">
-              <a
-                href="#tool"
-                className="hover:text-emerald-600 transition-colors"
-              >
-                Tool
-              </a>
-              <a
-                href="#how-to-use"
-                className="hover:text-emerald-600 transition-colors"
-              >
-                How to Use
-              </a>
-              <a
-                href="#features"
-                className="hover:text-emerald-600 transition-colors"
-              >
-                Features
-              </a>
-              <a
-                href="#faq"
-                className="hover:text-emerald-600 transition-colors"
-              >
-                FAQ
-              </a>
-              <Link
-                href="/bulk"
-                className="hover:text-emerald-600 transition-colors"
-              >
-                Bulk
-              </Link>
-            </nav>
+            {/* Divider */}
+            <div className="w-full border-t border-gray-100" />
 
-            <p className="text-xs text-gray-400 text-center">
-              © {new Date().getFullYear()} WA.link — Free WhatsApp Link
-              Generator.
-              <br className="sm:hidden" />
-              <span className="hidden sm:inline"> </span>
-              Not affiliated with WhatsApp or Meta.{" "}
-              <Link
-                href="/privacy-policy"
-                className="hover:text-emerald-600 transition-colors"
-              >
-                Privacy
-              </Link>{" "}
-              ·{" "}
-              <Link
-                href="/terms-of-service"
-                className="hover:text-emerald-600 transition-colors"
-              >
-                Terms
-              </Link>
-            </p>
+            {/* Bottom row: copyright + policy links */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-2 sm:gap-4">
+              <p className="text-xs text-gray-400">
+                © {new Date().getFullYear()} WA.link — Not affiliated with
+                WhatsApp or Meta.
+              </p>
+              <div className="flex items-center gap-3 text-xs text-gray-400">
+                <Link
+                  href="/privacy-policy"
+                  className="hover:text-emerald-600 transition-colors"
+                >
+                  Privacy Policy
+                </Link>
+                <span className="text-gray-300">·</span>
+                <Link
+                  href="/terms-of-service"
+                  className="hover:text-emerald-600 transition-colors"
+                >
+                  Terms of Service
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </footer>
 
       {/* ── GENERATED LINK MODAL ──────────────────────────────────── */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-8 relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-gray-900/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-5 sm:p-8 relative">
             <button
               id="close-link-modal-btn"
               onClick={() => setIsModalOpen(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-700"
+              className="absolute top-3 right-3 sm:top-4 sm:right-4 text-gray-400 hover:text-gray-700"
             >
               <svg
-                className="w-6 h-6"
+                className="w-5 h-5 sm:w-6 sm:h-6"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -1547,22 +1531,53 @@ export default function WhatsappLinkCreator() {
               </svg>
             </button>
 
-            <div className="text-center mb-6">
-              <h3 className="text-2xl font-bold text-gray-900">Your WA Link</h3>
+            <div className="text-center mb-4 sm:mb-6">
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-900">
+                Your WA Link
+              </h3>
               <p className="text-sm text-gray-500 mt-1">
                 Ready to share and scan.
               </p>
             </div>
 
-            <div className="flex flex-col items-center gap-6">
-              <div className="w-56 h-56 bg-white border border-gray-200 p-3 rounded-xl shadow-sm flex items-center justify-center">
+            <div className="flex flex-col items-center gap-4 sm:gap-6">
+              <div className="w-44 h-44 sm:w-56 sm:h-56 bg-white border border-gray-200 p-2 sm:p-3 rounded-xl shadow-sm flex items-center justify-center relative">
+                {qrLoading && (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-white rounded-xl z-10">
+                    <svg
+                      className="animate-spin h-8 w-8 text-emerald-600 mb-2"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      />
+                    </svg>
+                    <span className="text-xs text-gray-500 font-medium">
+                      Generating QR...
+                    </span>
+                  </div>
+                )}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(
                     shortSingleUrl,
                   )}`}
                   alt="QR Code"
-                  className="w-full h-full"
+                  className={`w-full h-full transition-opacity duration-300 ${qrLoading ? "opacity-0" : "opacity-100"}`}
+                  onLoad={() => setQrLoading(false)}
+                  onError={() => setQrLoading(false)}
                 />
               </div>
 

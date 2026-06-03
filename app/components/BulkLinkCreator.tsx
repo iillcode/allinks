@@ -189,17 +189,25 @@ const COUNTRIES: Country[] = [
 ];
 
 export default function BulkLinkCreator() {
-  const [bulkRows, setBulkRows] = useState<BulkRow[]>([
-  ]);
+  const [bulkRows, setBulkRows] = useState<BulkRow[]>([]);
   const [bulkPasteText, setBulkPasteText] = useState("");
   const [bulkCopySuccess, setBulkCopySuccess] = useState(false);
   const [bulkImportStatus, setBulkImportStatus] = useState<string | null>(null);
-  const [isBulkImportModalOpen, setIsBulkImportModalOpen] = useState(false);
+  const [isBulkImportModalOpen, setIsBulkImportModalOpen] = useState(true);
   const [bulkUniversalMessage, setBulkUniversalMessage] = useState("");
   const [selectedCountry, setSelectedCountry] = useState<Country>(COUNTRIES[0]);
   const [isClearConfirmOpen, setIsClearConfirmOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [copiedRowId, setCopiedRowId] = useState<string | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+  const [editingRowId, setEditingRowId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState<{
+    countryCode: string;
+    phone: string;
+    message: string;
+  }>({ countryCode: "", phone: "", message: "" });
+  const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
+  const exportMenuRef = useRef<HTMLDivElement>(null);
   const [openedLinks, setOpenedLinks] = useState<Set<string>>(() => {
     if (typeof window !== "undefined") {
       try {
@@ -211,7 +219,34 @@ export default function BulkLinkCreator() {
     }
     return new Set();
   });
-  const rowsPerPage = 4;
+  const rowsPerPage = isMobile ? 8 : 4;
+
+  // Detect mobile screen size
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  // Reset to page 1 when rowsPerPage changes (screen resize)
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [rowsPerPage]);
+
+  // Close export menu on outside click
+  useEffect(() => {
+    const handleOutside = (e: MouseEvent) => {
+      if (
+        exportMenuRef.current &&
+        !exportMenuRef.current.contains(e.target as Node)
+      ) {
+        setIsExportMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleOutside);
+    return () => document.removeEventListener("mousedown", handleOutside);
+  }, []);
 
   useEffect(() => {
     localStorage.setItem("openedLinks", JSON.stringify([...openedLinks]));
@@ -364,6 +399,37 @@ export default function BulkLinkCreator() {
     window.open(link, "_blank", "noopener,noreferrer");
   };
 
+  // Mobile edit modal handlers
+  const handleOpenEditModal = (row: BulkRow) => {
+    setEditingRowId(row.id);
+    setEditForm({
+      countryCode: row.countryCode,
+      phone: row.phone,
+      message: row.message,
+    });
+  };
+
+  const handleSaveEdit = () => {
+    if (!editingRowId) return;
+    setBulkRows(
+      bulkRows.map((row) =>
+        row.id === editingRowId
+          ? {
+              ...row,
+              countryCode: editForm.countryCode,
+              phone: editForm.phone,
+              message: editForm.message,
+            }
+          : row,
+      ),
+    );
+    setEditingRowId(null);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingRowId(null);
+  };
+
   const handleExportCSV = () => {
     const activeRows = bulkRows.filter(
       (r) => r.phone.replace(/\D/g, "") !== "",
@@ -434,14 +500,14 @@ export default function BulkLinkCreator() {
     <div className="min-h-screen bg-gray-50 text-gray-900 flex flex-col font-sans selection:bg-emerald-100 selection:text-emerald-900">
       {/* Navigation Header */}
       <header className="sticky top-0 z-40 w-full bg-white/75 backdrop-blur-xl border-b border-emerald-100/40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between">
           <Link
             href="/"
-            className="flex items-center gap-2.5 group cursor-pointer"
+            className="flex items-center gap-2 sm:gap-2.5 group cursor-pointer"
           >
-            <div className="w-9 h-9 bg-emerald-600 rounded-xl flex items-center justify-center shadow-md shadow-emerald-200/40 group-hover:shadow-lg group-hover:shadow-emerald-200/50 group-hover:scale-105 transition-all duration-300">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 bg-emerald-600 rounded-xl flex items-center justify-center shadow-md shadow-emerald-200/40 group-hover:shadow-lg group-hover:shadow-emerald-200/50 group-hover:scale-105 transition-all duration-300">
               <svg
-                className="w-5 h-5 text-white"
+                className="w-4 h-4 sm:w-5 sm:h-5 text-white"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -452,16 +518,16 @@ export default function BulkLinkCreator() {
                 <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
               </svg>
             </div>
-            <span className="font-bold text-xl tracking-tight text-gray-900">
+            <span className="font-bold text-lg sm:text-xl tracking-tight text-gray-900">
               WA<span className="text-emerald-600">.link</span>
             </span>
           </Link>
           <Link
-            href="/"
-            className="text-sm text-emerald-600 hover:text-emerald-700 font-medium flex items-center gap-1.5"
+            href="/#tool"
+            className="text-xs sm:text-sm text-emerald-600 hover:text-emerald-700 font-medium flex items-center gap-1 sm:gap-1.5"
           >
             <svg
-              className="w-4 h-4"
+              className="w-3.5 h-3.5 sm:w-4 sm:h-4"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -473,7 +539,10 @@ export default function BulkLinkCreator() {
                 d="M10 19l-7-7m0 0l7-7m-7 7h18"
               />
             </svg>
-            Back to Single Link Creator
+            <span className="hidden sm:inline">
+              Back to Single Link Creator
+            </span>
+            <span className="sm:hidden">Single Link</span>
           </Link>
         </div>
       </header>
@@ -482,22 +551,22 @@ export default function BulkLinkCreator() {
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-6">
           <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-            <div className="px-5 py-4 border-b border-gray-200 flex flex-wrap gap-4 items-center justify-between bg-gray-50">
+            <div className="px-4 sm:px-5 py-3 sm:py-4 border-b border-gray-200 flex flex-col sm:flex-row gap-3 sm:gap-4 items-start sm:items-center justify-between bg-gray-50">
               <div>
-                <h2 className="text-xl font-bold text-gray-900">
+                <h2 className="text-lg sm:text-xl font-bold text-gray-900">
                   Bulk Link Creator
                 </h2>
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-xs sm:text-sm text-gray-500 mt-0.5 sm:mt-1">
                   Import, manage, and export multiple WhatsApp links at once.
                 </p>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 w-full sm:w-auto">
                 <button
                   onClick={handleClearBulkRows}
-                  className="h-9 px-4 bg-white border border-gray-300 hover:bg-gray-100 text-sm font-medium text-gray-700 rounded-md transition-colors flex items-center gap-1.5"
+                  className="h-9 px-3 sm:px-4 bg-white border border-gray-300 hover:bg-gray-100 text-xs sm:text-sm font-medium text-gray-700 rounded-md transition-colors flex items-center gap-1.5"
                 >
                   <svg
-                    className="w-4 h-4"
+                    className="w-3.5 h-3.5 sm:w-4 sm:h-4"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -509,15 +578,16 @@ export default function BulkLinkCreator() {
                       d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                     />
                   </svg>
-                  Clear All
+                  <span className="sm:hidden">Clear</span>
+                  <span className="hidden sm:inline">Clear All</span>
                 </button>
 
                 <button
                   onClick={handleAddBulkRow}
-                  className="h-9 px-4 bg-white border border-gray-300 hover:bg-gray-100 text-sm font-medium text-gray-700 rounded-md transition-colors flex items-center gap-1.5"
+                  className="h-9 px-3 sm:px-4 bg-white border border-gray-300 hover:bg-gray-100 text-xs sm:text-sm font-medium text-gray-700 rounded-md transition-colors flex items-center gap-1.5"
                 >
                   <svg
-                    className="w-4 h-4"
+                    className="w-3.5 h-3.5 sm:w-4 sm:h-4"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -529,14 +599,15 @@ export default function BulkLinkCreator() {
                       d="M12 4v16m8-8H4"
                     />
                   </svg>
-                  Add Row
+                  <span className="sm:hidden">Add</span>
+                  <span className="hidden sm:inline">Add Row</span>
                 </button>
                 <button
                   onClick={() => setIsBulkImportModalOpen(true)}
-                  className="h-9 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-md shadow-sm transition-colors flex items-center gap-1.5"
+                  className="h-9 px-3 sm:px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-medium rounded-md shadow-sm transition-colors flex items-center gap-1.5"
                 >
                   <svg
-                    className="w-4 h-4"
+                    className="w-3.5 h-3.5 sm:w-4 sm:h-4"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -550,6 +621,75 @@ export default function BulkLinkCreator() {
                   </svg>
                   Import
                 </button>
+
+                {/* Mobile Export Dropdown (3-dot menu) */}
+                <div className="relative sm:hidden" ref={exportMenuRef}>
+                  <button
+                    onClick={() => setIsExportMenuOpen(!isExportMenuOpen)}
+                    className="h-9 w-9 bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 rounded-md transition-colors flex items-center justify-center"
+                    title="Export options"
+                  >
+                    <svg
+                      className="w-4 h-4"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle cx="12" cy="5" r="2" />
+                      <circle cx="12" cy="12" r="2" />
+                      <circle cx="12" cy="19" r="2" />
+                    </svg>
+                  </button>
+
+                  {isExportMenuOpen && (
+                    <div className="absolute right-0 top-full mt-1 w-44 bg-white border border-gray-200 rounded-lg shadow-lg z-30 overflow-hidden">
+                      <button
+                        onClick={() => {
+                          handleExportCSV();
+                          setIsExportMenuOpen(false);
+                        }}
+                        className="w-full px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2.5 transition-colors text-left"
+                      >
+                        <svg
+                          className="w-4 h-4 text-emerald-600"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                          />
+                        </svg>
+                        Export as CSV
+                      </button>
+                      <div className="border-t border-gray-100" />
+                      <button
+                        onClick={() => {
+                          handleExportTXT();
+                          setIsExportMenuOpen(false);
+                        }}
+                        className="w-full px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2.5 transition-colors text-left"
+                      >
+                        <svg
+                          className="w-4 h-4 text-blue-600"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                          />
+                        </svg>
+                        Export as TXT
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -557,8 +697,8 @@ export default function BulkLinkCreator() {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-gray-100 border-b border-gray-200 text-gray-600 text-xs font-semibold uppercase">
-                    <th className="py-3 px-4 w-12">#</th>
-                    <th className="py-3 px-4 w-48">
+                    <th className="py-3 px-3 sm:px-4 w-10 sm:w-12">#</th>
+                    <th className="py-3 px-3 sm:px-4 w-48 hidden md:table-cell">
                       <div className="flex items-center gap-2 w-full">
                         <span className="w-2/3 truncate">Country</span>
                         <select
@@ -581,11 +721,20 @@ export default function BulkLinkCreator() {
                         </select>
                       </div>
                     </th>
-                    <th className="py-3 px-4 w-44 align-top">Phone Number</th>
-                    <th className="py-3 px-4 align-top">Message</th>
-                    <th className="py-3 px-4 w-40 align-top">Link</th>
-                    <th className="py-3 px-4 w-20 text-center align-top">
+                    <th className="py-3 px-3 sm:px-4 align-top">
+                      Phone Number
+                    </th>
+                    <th className="py-3 px-3 sm:px-4 align-top hidden md:table-cell">
+                      Message
+                    </th>
+                    <th className="py-3 px-3 sm:px-4 w-32 sm:w-40 align-top">
+                      Link
+                    </th>
+                    <th className="py-3 px-3 sm:px-4 w-16 sm:w-20 text-center align-top hidden md:table-cell">
                       Actions
+                    </th>
+                    <th className="py-3 px-3 w-12 text-center align-top md:hidden">
+                      Edit
                     </th>
                   </tr>
                 </thead>
@@ -599,10 +748,11 @@ export default function BulkLinkCreator() {
                         COUNTRIES[0];
                       return (
                         <tr key={row.id} className="hover:bg-gray-50 text-sm">
-                          <td className="py-2 px-4 text-gray-500 text-center">
+                          <td className="py-2 px-3 sm:px-4 text-gray-500 text-center text-xs">
                             {globalIdx + 1}
                           </td>
-                          <td className="py-2 px-3">
+                          {/* Country - hidden on mobile */}
+                          <td className="py-2 px-3 sm:px-4 hidden md:table-cell">
                             <div className="flex items-center gap-2 w-full">
                               <div className="w-2/3 flex items-center gap-2 overflow-hidden">
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -640,7 +790,8 @@ export default function BulkLinkCreator() {
                               </select>
                             </div>
                           </td>
-                          <td className="py-2 px-3">
+                          {/* Phone Number - always visible */}
+                          <td className="py-2 px-3 sm:px-4">
                             <input
                               type="text"
                               value={row.phone}
@@ -654,7 +805,8 @@ export default function BulkLinkCreator() {
                               className="w-full h-8 bg-white border border-gray-300 rounded px-2 text-xs focus:outline-none focus:border-emerald-500"
                             />
                           </td>
-                          <td className="py-2 px-3">
+                          {/* Message - hidden on mobile */}
+                          <td className="py-2 px-3 sm:px-4 hidden md:table-cell">
                             <input
                               type="text"
                               value={row.message}
@@ -668,38 +820,41 @@ export default function BulkLinkCreator() {
                               className="w-full h-8 bg-white border border-gray-300 rounded px-2 text-xs focus:outline-none focus:border-emerald-500"
                             />
                           </td>
-                          <td className="py-2 px-3">
+                          {/* Link / Open Chat - always visible */}
+                          <td className="py-2 px-3 sm:px-4">
                             {generatedLink ? (
-                              <div className="flex gap-2">
+                              <div className="flex gap-1.5 sm:gap-2">
                                 <button
                                   onClick={() => handleOpenLink(generatedLink)}
-                                  className={`flex-1 h-8 text-xs font-semibold rounded flex items-center justify-center gap-1.5 transition-colors ${
+                                  className={`flex-1 h-8 text-xs font-semibold rounded flex items-center justify-center gap-1 sm:gap-1.5 transition-colors ${
                                     openedLinks.has(generatedLink)
                                       ? "bg-gray-100 hover:bg-gray-200 text-gray-600"
                                       : "bg-emerald-50 hover:bg-emerald-100 text-emerald-700"
                                   }`}
                                 >
                                   <svg
-                                    className="w-3.5 h-3.5"
+                                    className="w-3 h-3 sm:w-3.5 sm:h-3.5"
                                     fill="currentColor"
                                     viewBox="0 0 24 24"
                                   >
                                     <path d="M12.012 2c-5.506 0-9.989 4.478-9.99 9.984a9.96 9.96 0 0 0 1.333 4.993L2 22l5.13-1.346a9.945 9.945 0 0 0 4.881 1.279h.005c5.505 0 9.988-4.478 9.989-9.985 0-2.67-1.037-5.18-2.92-7.062C17.18 3.036 14.67 2 12.012 2zm4.7 13.561c-.258.726-1.503 1.34-2.072 1.424-.543.08-1.25.143-3.64-.805-3.056-1.21-5.029-4.313-5.181-4.516-.151-.202-1.233-1.636-1.233-3.12 0-1.485.78-2.215 1.056-2.518.277-.303.606-.379.808-.379.202 0 .404.002.58.01.187.008.437-.03.684.568.253.614.86 2.096.936 2.247.075.152.126.328.025.529-.1.202-.152.328-.303.504-.151.176-.318.393-.454.529-.152.152-.31.318-.134.62.176.303.784 1.289 1.683 2.087.973.864 1.792 1.134 2.12 1.298.328.164.521.139.715-.075.193-.215.833-.969 1.056-1.303.223-.333.447-.278.754-.165.31.114 1.954.919 2.29 1.083.336.164.56.247.643.388.083.14.083.812-.175 1.538z" />
                                   </svg>
-                                  {openedLinks.has(generatedLink)
-                                    ? "Opened"
-                                    : "Open"}
+                                  <span className="hidden sm:inline">
+                                    {openedLinks.has(generatedLink)
+                                      ? "Opened"
+                                      : "Open"}
+                                  </span>
                                 </button>
                                 <button
                                   onClick={() =>
                                     handleCopySingleLink(generatedLink, row.id)
                                   }
-                                  className="h-8 px-3 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-semibold rounded flex items-center justify-center gap-1.5 transition-colors"
+                                  className="h-8 px-2 sm:px-3 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-semibold rounded flex items-center justify-center gap-1 sm:gap-1.5 transition-colors"
                                   title="Copy link"
                                 >
                                   {copiedRowId === row.id ? (
                                     <svg
-                                      className="w-3.5 h-3.5"
+                                      className="w-3 h-3 sm:w-3.5 sm:h-3.5"
                                       fill="none"
                                       viewBox="0 0 24 24"
                                       stroke="currentColor"
@@ -713,7 +868,7 @@ export default function BulkLinkCreator() {
                                     </svg>
                                   ) : (
                                     <svg
-                                      className="w-3.5 h-3.5"
+                                      className="w-3 h-3 sm:w-3.5 sm:h-3.5"
                                       fill="none"
                                       viewBox="0 0 24 24"
                                       stroke="currentColor"
@@ -726,7 +881,6 @@ export default function BulkLinkCreator() {
                                       />
                                     </svg>
                                   )}
-                                  {copiedRowId === row.id ? "" : ""}
                                 </button>
                               </div>
                             ) : (
@@ -737,7 +891,8 @@ export default function BulkLinkCreator() {
                               </div>
                             )}
                           </td>
-                          <td className="py-2 px-4 text-center">
+                          {/* Actions / Delete - hidden on mobile */}
+                          <td className="py-2 px-3 sm:px-4 text-center hidden md:table-cell">
                             <button
                               onClick={() => handleDeleteBulkRow(row.id)}
                               className="text-red-500 hover:text-red-700 text-xs font-medium flex items-center gap-1 mx-auto"
@@ -758,14 +913,36 @@ export default function BulkLinkCreator() {
                               Delete
                             </button>
                           </td>
+                          {/* Mobile Edit Button - visible only on mobile */}
+                          <td className="py-2 px-3 text-center md:hidden">
+                            <button
+                              onClick={() => handleOpenEditModal(row)}
+                              className="w-8 h-8 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded flex items-center justify-center transition-colors"
+                              title="Edit row"
+                            >
+                              <svg
+                                className="w-4 h-4"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2"
+                                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                />
+                              </svg>
+                            </button>
+                          </td>
                         </tr>
                       );
                     })
                   ) : (
                     <tr>
                       <td
-                        colSpan={6}
-                        className="py-8 text-center text-gray-500 text-sm"
+                        colSpan={7}
+                        className="py-8 sm:py-12 text-center text-gray-500 text-sm"
                       >
                         No rows available. Click <strong>Import</strong> or{" "}
                         <strong>Add Row</strong> to get started.
@@ -777,8 +954,8 @@ export default function BulkLinkCreator() {
             </div>
 
             {/* Footer: Total + Pagination + Actions */}
-            <div className="bg-gray-50 px-5 py-4 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-4">
-              <div className="text-sm text-gray-600 flex flex-col">
+            <div className="bg-gray-50 px-4 sm:px-5 py-3 sm:py-4 border-t border-gray-200 flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
+              <div className="text-sm text-gray-600 flex flex-col items-center sm:items-start">
                 <span>
                   Total Rows: <strong>{bulkRows.length}</strong>
                 </span>
@@ -790,13 +967,13 @@ export default function BulkLinkCreator() {
                 )}
               </div>
 
-              {/* Pagination Controls (centered) */}
+              {/* Pagination Controls */}
               {totalPages > 1 && (
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 sm:gap-2 justify-center">
                   <button
                     onClick={() => handlePageChange(currentPage - 1)}
                     disabled={currentPage === 1}
-                    className="h-8 px-3 bg-white border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium text-gray-700 rounded-md transition-colors flex items-center gap-1"
+                    className="h-9 w-9 sm:h-8 sm:w-auto sm:px-3 bg-white border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium text-gray-700 rounded-md transition-colors flex items-center justify-center gap-1"
                   >
                     <svg
                       className="w-3.5 h-3.5"
@@ -811,14 +988,14 @@ export default function BulkLinkCreator() {
                         d="M15 19l-7-7 7-7"
                       />
                     </svg>
-                    Previous
+                    <span className="hidden sm:inline">Previous</span>
                   </button>
                   {Array.from({ length: totalPages }, (_, i) => i + 1).map(
                     (page) => (
                       <button
                         key={page}
                         onClick={() => handlePageChange(page)}
-                        className={`h-8 w-8 text-sm font-medium rounded-md transition-colors ${
+                        className={`h-9 w-9 sm:h-8 sm:w-8 text-sm font-medium rounded-md transition-colors ${
                           currentPage === page
                             ? "bg-emerald-600 text-white"
                             : "bg-white border border-gray-300 hover:bg-gray-100 text-gray-700"
@@ -831,9 +1008,9 @@ export default function BulkLinkCreator() {
                   <button
                     onClick={() => handlePageChange(currentPage + 1)}
                     disabled={currentPage === totalPages}
-                    className="h-8 px-3 bg-white border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium text-gray-700 rounded-md transition-colors flex items-center gap-1"
+                    className="h-9 w-9 sm:h-8 sm:w-auto sm:px-3 bg-white border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium text-gray-700 rounded-md transition-colors flex items-center justify-center gap-1"
                   >
-                    Next
+                    <span className="hidden sm:inline">Next</span>
                     <svg
                       className="w-3.5 h-3.5"
                       fill="none"
@@ -851,19 +1028,13 @@ export default function BulkLinkCreator() {
                 </div>
               )}
 
-              <div className="flex gap-3">
-                {/* <button
-                  onClick={handleCopyAllLinks}
-                  className="px-4 py-2 bg-white border border-gray-300 hover:bg-gray-100 text-gray-800 text-sm font-medium rounded-md transition-colors"
-                >
-                  {bulkCopySuccess ? "Copied!" : "Copy Links"}
-                </button> */}
+              <div className="hidden sm:flex gap-2 sm:gap-3 justify-center">
                 <button
                   onClick={handleExportCSV}
-                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-md transition-colors flex items-center gap-1.5"
+                  className="px-3 sm:px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-medium rounded-md transition-colors flex items-center gap-1 sm:gap-1.5"
                 >
                   <svg
-                    className="w-4 h-4"
+                    className="w-3.5 h-3.5 sm:w-4 sm:h-4"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -875,14 +1046,15 @@ export default function BulkLinkCreator() {
                       d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                     />
                   </svg>
-                  Export CSV
+                  <span className="hidden sm:inline">Export CSV</span>
+                  <span className="sm:hidden">CSV</span>
                 </button>
                 <button
                   onClick={handleExportTXT}
-                  className="px-4 py-2 bg-white border border-gray-300 hover:bg-gray-100 text-gray-800 text-sm font-medium rounded-md transition-colors flex items-center gap-1.5"
+                  className="px-3 sm:px-4 py-2 bg-white border border-gray-300 hover:bg-gray-100 text-gray-800 text-xs sm:text-sm font-medium rounded-md transition-colors flex items-center gap-1 sm:gap-1.5"
                 >
                   <svg
-                    className="w-4 h-4"
+                    className="w-3.5 h-3.5 sm:w-4 sm:h-4"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -894,7 +1066,8 @@ export default function BulkLinkCreator() {
                       d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                     />
                   </svg>
-                  Export TXT
+                  <span className="hidden sm:inline">Export TXT</span>
+                  <span className="sm:hidden">TXT</span>
                 </button>
               </div>
             </div>
@@ -904,11 +1077,11 @@ export default function BulkLinkCreator() {
 
       {/* Clear All Confirmation Modal */}
       {isClearConfirmOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-gray-900/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-5 sm:p-6 relative mx-3">
             <button
               onClick={() => setIsClearConfirmOpen(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-700"
+              className="absolute top-3 right-3 sm:top-4 sm:right-4 text-gray-400 hover:text-gray-700"
             >
               <svg
                 className="w-5 h-5"
@@ -997,14 +1170,14 @@ export default function BulkLinkCreator() {
 
       {/* Bulk Import Modal */}
       {isBulkImportModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-8 relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-gray-900/40 backdrop-blur-sm overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-5 sm:p-8 relative mx-3 my-4">
             <button
               onClick={() => setIsBulkImportModalOpen(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-700"
+              className="absolute top-3 right-3 sm:top-4 sm:right-4 text-gray-400 hover:text-gray-700"
             >
               <svg
-                className="w-6 h-6"
+                className="w-5 h-5 sm:w-6 sm:h-6"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -1018,14 +1191,16 @@ export default function BulkLinkCreator() {
               </svg>
             </button>
 
-            <div className="mb-6">
-              <h3 className="text-2xl font-bold text-gray-900">Bulk Import</h3>
-              <p className="text-sm text-gray-500 mt-1">
+            <div className="mb-4 sm:mb-6">
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-900">
+                Bulk Import
+              </h3>
+              <p className="text-xs sm:text-sm text-gray-500 mt-1">
                 Paste phone numbers (one per line, or comma-separated).
               </p>
             </div>
 
-            <div className="space-y-5">
+            <div className="space-y-4 sm:space-y-5">
               <div>
                 <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase">
                   Phone Numbers
@@ -1052,10 +1227,10 @@ export default function BulkLinkCreator() {
                 />
               </div>
 
-              <div className="flex items-center gap-3 pt-2">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
                 <button
                   onClick={handleParseBulkPaste}
-                  className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-lg transition-colors shadow-sm flex items-center gap-1.5"
+                  className="px-5 sm:px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-lg transition-colors shadow-sm flex items-center justify-center gap-1.5"
                 >
                   <svg
                     className="w-4 h-4"
@@ -1074,7 +1249,7 @@ export default function BulkLinkCreator() {
                 </button>
                 <button
                   onClick={() => setIsBulkImportModalOpen(false)}
-                  className="px-6 py-2.5 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-semibold rounded-lg transition-colors flex items-center gap-1.5"
+                  className="px-5 sm:px-6 py-2.5 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-semibold rounded-lg transition-colors flex items-center justify-center gap-1.5"
                 >
                   <svg
                     className="w-4 h-4"
@@ -1092,7 +1267,7 @@ export default function BulkLinkCreator() {
                   Cancel
                 </button>
                 {bulkImportStatus && (
-                  <span className="text-xs font-medium text-emerald-600 ml-auto">
+                  <span className="text-xs font-medium text-emerald-600 sm:ml-auto text-center">
                     {bulkImportStatus}
                   </span>
                 )}
@@ -1102,14 +1277,151 @@ export default function BulkLinkCreator() {
         </div>
       )}
 
-      {/* Footer */}
-      <footer className="bg-white border-t border-gray-200 py-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 bg-emerald-600 rounded flex items-center justify-center">
+      {/* Mobile Edit Row Modal */}
+      {editingRowId && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-gray-900/40 backdrop-blur-sm overflow-y-auto">
+          <div className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl max-w-md w-full p-5 sm:p-6 relative sm:mx-3 max-h-[90vh] overflow-y-auto">
+            {/* Drag handle for mobile */}
+            <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-4 sm:hidden" />
+
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-lg font-bold text-gray-900">Edit Row</h3>
+              <button
+                onClick={handleCancelEdit}
+                className="text-gray-400 hover:text-gray-700 p-1"
+              >
                 <svg
-                  className="w-4 h-4 text-white"
+                  className="w-5 h-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {/* Country */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase">
+                  Country
+                </label>
+                <select
+                  value={editForm.countryCode}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, countryCode: e.target.value })
+                  }
+                  className="w-full h-11 bg-white border border-gray-300 rounded-lg px-3 text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                >
+                  {COUNTRIES.map((c) => (
+                    <option key={`edit-${c.code}`} value={c.code}>
+                      {c.name} (+{c.code})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Phone Number */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase">
+                  Phone Number
+                </label>
+                <input
+                  type="text"
+                  value={editForm.phone}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, phone: e.target.value })
+                  }
+                  className="w-full h-11 bg-white border border-gray-300 rounded-lg px-3 text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                  placeholder="Enter phone number"
+                />
+              </div>
+
+              {/* Message */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase">
+                  Message (Optional)
+                </label>
+                <textarea
+                  rows={3}
+                  value={editForm.message}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, message: e.target.value })
+                  }
+                  className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 resize-none"
+                  placeholder="Pre-filled message"
+                />
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => {
+                    handleDeleteBulkRow(editingRowId);
+                    setEditingRowId(null);
+                  }}
+                  className="flex-1 py-3 bg-red-50 hover:bg-red-100 text-red-600 text-sm font-semibold rounded-lg transition-colors flex items-center justify-center gap-1.5"
+                >
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                    />
+                  </svg>
+                  Delete
+                </button>
+                <button
+                  onClick={handleCancelEdit}
+                  className="flex-1 py-3 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-semibold rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveEdit}
+                  className="flex-[2] py-3 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-lg transition-colors flex items-center justify-center gap-1.5"
+                >
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                  Save Changes
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Footer */}
+      <footer className="bg-white border-t border-gray-200 py-6 sm:py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 bg-emerald-600 rounded flex items-center justify-center">
+                <svg
+                  className="w-3.5 h-3.5 text-white"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -1120,22 +1432,10 @@ export default function BulkLinkCreator() {
                   <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
                 </svg>
               </div>
-              <span className="font-bold text-gray-900">
+              <span className="font-bold text-sm text-gray-900">
                 WA<span className="text-gray-500">.link</span>
               </span>
             </div>
-
-            <nav className="flex items-center gap-6 text-sm text-gray-500">
-              <a href="/" className="hover:text-emerald-600 transition-colors">
-                Single Link
-              </a>
-              <a
-                href="/bulk"
-                className="hover:text-emerald-600 transition-colors"
-              >
-                Bulk Creator
-              </a>
-            </nav>
 
             <p className="text-xs text-gray-400 text-center">
               © {new Date().getFullYear()} WA.link — Free WhatsApp Link
